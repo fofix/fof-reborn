@@ -204,25 +204,6 @@ class Font:
         except KeyError:
             s = self.font.render(ch, True, (255, 255, 255))
 
-            # Draw outlines
-            """
-      from PIL import Image, ImageFilter
-      srcImg = Image.fromstring("RGBA", s.get_size(), pygame.image.tostring(s, "RGBA"))
-      img    = Image.fromstring("RGBA", s.get_size(), pygame.image.tostring(s, "RGBA"))
-      for y in xrange(img.size[1]):
-        for x in xrange(img.size[0]):
-          a = 0
-          ns = 3
-          n = 0
-          for ny in range(max(0, y - ns), min(img.size[1], y + ns)):
-            for nx in range(max(0, x - ns), min(img.size[0], x + ns)):
-              a += srcImg.getpixel((nx, ny))[3]
-              n += 1
-          if a and srcImg.getpixel((x, y))[3] == 0:
-            img.putpixel((x, y), (0, 0, 0, a / n))
-      s = pygame.image.fromstring(img.tostring(), s.get_size(), "RGBA")
-      """
-
             if not self.glyphTextures:
                 texture = self._allocateGlyphTexture()
             else:
