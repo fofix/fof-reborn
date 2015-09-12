@@ -206,7 +206,7 @@ class Font:
 
             # Draw outlines
             """
-      import Image, ImageFilter
+      from PIL import Image, ImageFilter
       srcImg = Image.fromstring("RGBA", s.get_size(), pygame.image.tostring(s, "RGBA"))
       img    = Image.fromstring("RGBA", s.get_size(), pygame.image.tostring(s, "RGBA"))
       for y in xrange(img.size[1]):

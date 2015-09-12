@@ -30,15 +30,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 from Queue import Queue, Empty
 
-try:
-    from PIL import Image
-except ImportError:
-    import Image
-
-try:
-    from PIL import PngImagePlugin
-except ImportError:
-    import PngImagePlugin
+from PIL import Image
 
 Config.define("opengl", "supportfbo", bool, False)
 
