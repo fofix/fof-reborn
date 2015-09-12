@@ -6,10 +6,10 @@ Running the game
 
 First, the following supporting Python libraries should be installed.
 
-	- Python 2.4 or later
+	- Python 2.7
 	- PyGame
 	- PyOpenGL and a video card with recent OpenGL drivers
-	- Python Imaging Library
+	- Pillow (PIL Fork)
 	- numpy
 	- Cerealizer - Install from pypi or using pip
 	- Optional: vorbis-tools for importing Guitar Hero (tm) songs
