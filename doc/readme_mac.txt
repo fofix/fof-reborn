@@ -31,22 +31,8 @@ All the stuff should be located under a single folder. For example:
 
 ~/Projects/FretsOnFire/
 
-~/Projects/glew/
 ~/Projects/amanith/
 ~/Projects/PyAmanith/
-
---------------------------------------------------------------------------------
-2.1. GLEW (universal)
-
-The version in the Internet at the time of building this was not compatible with
-Intel Macs. The XCode project in glew/GLEW is used to build libGLEW.dylib into
-glew/lib, and it will use OpenGL.framework and AGL.framework.
-
-Copy GLEW into glew. Build XCode project. The results should be
-glew/lib/libGLEW.dylib
-
-If something fails later on in the process concerning this lib, copy to
-/usr/local/lib (or wherever your system knows where to look for dylibs)
 
 --------------------------------------------------------------------------------
 2.2. amanith (universal)

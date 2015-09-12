@@ -42,14 +42,16 @@ except ImportError:
 
 Config.define("opengl", "supportfbo", bool, False)
 
-try:
-    from glew import *
-except ImportError:
-    #Log.warn("GLEWpy not found -> Emulating Render to texture functionality.")
-    pass
-
 class TextureException(Exception):
     pass
+
+
+def _getGlExtension(ext):
+    glextstr = glGetString(GL_EXTENSIONS)
+    if ext in glextstr:
+        return True
+    else:
+        return False
 
 # A queue containing (function, args) pairs that clean up deleted OpenGL handles.
 # The functions are called in the main OpenGL thread.
@@ -98,7 +100,7 @@ class Framebuffer:
             # On current NVIDIA hardware, the stencil buffer must be packed
             # with the depth buffer (GL_NV_packed_depth_stencil) instead of
             # separate binding, so we must check for that extension here
-            if glewGetExtension("GL_NV_packed_depth_stencil"):
+            if _getGlExtension("GL_NV_packed_depth_stencil"):
                 GL_DEPTH_STENCIL_EXT = 0x84F9
 
                 glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, self.depthbuf)
@@ -142,18 +144,8 @@ class Framebuffer:
             Log.warn("Frame buffer object support disabled in configuration.")
             return False
 
-        if not "glewGetExtension" in globals():
-            Log.warn("GLEWpy not found, so render to texture functionality disabled.")
-            return False
-
-        glewInit()
-
-        if not glewGetExtension("GL_EXT_framebuffer_object"):
+        if not _getExtension("GL_EXT_framebuffer_object"):
             Log.warn("No support for framebuffer objects, so render to texture functionality disabled.")
-            return False
-
-        if glGetString(GL_VENDOR) == "ATI Technologies Inc.":
-            Log.warn("Frame buffer object support disabled until ATI learns to make proper OpenGL drivers (no stencil support).")
             return False
 
         Framebuffer.fboSupported = True
