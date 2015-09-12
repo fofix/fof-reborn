@@ -30,7 +30,7 @@ import shutil
 import Config
 import sha
 import binascii
-import Cerealizer
+import cerealizer
 import urllib
 import Version
 import Theme
@@ -79,7 +79,7 @@ class SongInfo(object):
 
         scores = self._get("scores", str, "")
         if scores:
-            scores = Cerealizer.loads(binascii.unhexlify(scores))
+            scores = cerealizer.loads(binascii.unhexlify(scores))
             for difficulty in scores.keys():
                 try:
                     difficulty = difficulties[difficulty]

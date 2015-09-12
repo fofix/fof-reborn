@@ -182,7 +182,6 @@ data/win32/installer/SettingsDialog.ini
 src/Audio.py
 src/AudioTest.py
 src/Camera.py
-src/Cerealizer.py
 src/Collada.py
 src/Config.py
 src/Credits.py
