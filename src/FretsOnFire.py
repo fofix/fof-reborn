@@ -76,12 +76,6 @@ if __name__ == "__main__":
         engine.setStartupLayer(menu)
 
         try:
-            import psyco
-            psyco.profile()
-        except:
-            Log.warn("Unable to enable psyco.")
-
-        try:
             while engine.run():
                 pass
         except KeyboardInterrupt:
