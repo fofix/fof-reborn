@@ -104,7 +104,7 @@ class SongInfo(object):
         s = {}
         for difficulty in self.highScores.keys():
             s[difficulty.id] = [(score, stars, name, self.getScoreHash(difficulty, score, stars, name)) for score, stars, name in self.highScores[difficulty]]
-        return binascii.hexlify(Cerealizer.dumps(s))
+        return binascii.hexlify(cerealizer.dumps(s))
 
     def save(self):
         self._set("scores", self.getObfuscatedScores())
