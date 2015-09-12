@@ -21,15 +21,15 @@
 #####################################################################
 
 class Message:
-  classes = {}
-  
-  def __init__(self):
-    if not self.__class__ in self.classes:
-      self.classes[self.__class__] = len(self.classes)
-    self.id = self.classes[self.__class__]
+    classes = {}
+
+    def __init__(self):
+        if not self.__class__ in self.classes:
+            self.classes[self.__class__] = len(self.classes)
+        self.id = self.classes[self.__class__]
 
 class ObjectCreated(Message):
-  pass
+    pass
 
 class ObjectDestroyed(Message):
-  pass
+    pass

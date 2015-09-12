@@ -9,15 +9,15 @@ from DataTypeConverters import readBew, readVar, varLen
 
 
 class RawInstreamFile:
-    
+
     """
-    
+
     It parses and reads data from an input file. It takes care of big 
     endianess, and keeps track of the cursor position. The midi parser 
     only reads from this object. Never directly from the file.
-    
+
     """
-    
+
     def __init__(self, infile=''):
         """ 
         If 'file' is a string we assume it is a path and read from 
@@ -42,11 +42,11 @@ class RawInstreamFile:
 
 
     # setting up data manually
-    
+
     def setData(self, data=''):
         "Sets the data from a string."
         self.data = data
-    
+
     # cursor operations
 
     def setCursor(self, position=0):
@@ -57,14 +57,14 @@ class RawInstreamFile:
     def getCursor(self):
         "Returns the value of the cursor"
         return self.cursor
-        
-        
+
+
     def moveCursor(self, relative_position=0):
         "Moves the cursor to a new relative position"
         self.cursor += relative_position
 
     # native data reading functions
-        
+
     def nextSlice(self, length, move_cursor=1):
         "Reads the next text slice from the raw data, with length"
         c = self.cursor
@@ -72,8 +72,8 @@ class RawInstreamFile:
         if move_cursor:
             self.moveCursor(length)
         return slc
-        
-        
+
+
     def readBew(self, n_bytes=1, move_cursor=1):
         """
         Reads n bytes of date from the current cursor position.

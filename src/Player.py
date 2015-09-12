@@ -57,114 +57,114 @@ Config.define("player", "name",         str, "")
 Config.define("player", "difficulty",   int, Song.EASY_DIFFICULTY)
 
 class Controls:
-  def __init__(self):
-    def keycode(name):
-      k = Config.get("player", name)
-      try:
-        return int(k)
-      except:
-        return getattr(pygame, k)
-    
-    self.flags = 0
-    self.controlMapping = {
-      keycode("key_left"):      LEFT,
-      keycode("key_right"):     RIGHT,
-      keycode("key_up"):        UP,
-      keycode("key_down"):      DOWN,
-      keycode("key_action1"):   ACTION1,
-      keycode("key_action2"):   ACTION2,
-      keycode("key_1"):         KEY1,
-      keycode("key_2"):         KEY2,
-      keycode("key_3"):         KEY3,
-      keycode("key_4"):         KEY4,
-      keycode("key_5"):         KEY5,
-      keycode("key_cancel"):    CANCEL,
-    }
-    
-    # Multiple key support
-    self.heldKeys = {}
+    def __init__(self):
+        def keycode(name):
+            k = Config.get("player", name)
+            try:
+                return int(k)
+            except:
+                return getattr(pygame, k)
 
-  def getMapping(self, key):
-    return self.controlMapping.get(key)
+        self.flags = 0
+        self.controlMapping = {
+            keycode("key_left"):      LEFT,
+            keycode("key_right"):     RIGHT,
+            keycode("key_up"):        UP,
+            keycode("key_down"):      DOWN,
+            keycode("key_action1"):   ACTION1,
+            keycode("key_action2"):   ACTION2,
+            keycode("key_1"):         KEY1,
+            keycode("key_2"):         KEY2,
+            keycode("key_3"):         KEY3,
+            keycode("key_4"):         KEY4,
+            keycode("key_5"):         KEY5,
+            keycode("key_cancel"):    CANCEL,
+        }
 
-  def keyPressed(self, key):
-    c = self.getMapping(key)
-    if c:
-      self.toggle(c, True)
-      if c in self.heldKeys and not key in self.heldKeys[c]:
-        self.heldKeys[c].append(key)
-      return c
-    return None
+        # Multiple key support
+        self.heldKeys = {}
 
-  def keyReleased(self, key):
-    c = self.getMapping(key)
-    if c:
-      if c in self.heldKeys:
-        if key in self.heldKeys[c]:
-          self.heldKeys[c].remove(key)
-          if not self.heldKeys[c]:
+    def getMapping(self, key):
+        return self.controlMapping.get(key)
+
+    def keyPressed(self, key):
+        c = self.getMapping(key)
+        if c:
+            self.toggle(c, True)
+            if c in self.heldKeys and not key in self.heldKeys[c]:
+                self.heldKeys[c].append(key)
+            return c
+        return None
+
+    def keyReleased(self, key):
+        c = self.getMapping(key)
+        if c:
+            if c in self.heldKeys:
+                if key in self.heldKeys[c]:
+                    self.heldKeys[c].remove(key)
+                    if not self.heldKeys[c]:
+                        self.toggle(c, False)
+                        return c
+                return None
             self.toggle(c, False)
             return c
         return None
-      self.toggle(c, False)
-      return c
-    return None
 
-  def toggle(self, control, state):
-    prevState = self.flags
-    if state:
-      self.flags |= control
-      return not prevState & control
-    else:
-      self.flags &= ~control
-      return prevState & control
+    def toggle(self, control, state):
+        prevState = self.flags
+        if state:
+            self.flags |= control
+            return not prevState & control
+        else:
+            self.flags &= ~control
+            return prevState & control
 
-  def getState(self, control):
-    return self.flags & control
+    def getState(self, control):
+        return self.flags & control
 
 class Player(object):
-  def __init__(self, owner, name):
-    self.owner    = owner
-    self.controls = Controls()
-    self.reset()
-    
-  def reset(self):
-    self.score         = 0
-    self._streak       = 0
-    self.notesHit      = 0
-    self.longestStreak = 0
-    self.cheating      = False
-    
-  def getName(self):
-    return Config.get("player", "name")
-    
-  def setName(self, name):
-    Config.set("player", "name", name)
-    
-  name = property(getName, setName)
-  
-  def getStreak(self):
-    return self._streak
-    
-  def setStreak(self, value):
-    self._streak = value
-    self.longestStreak = max(self._streak, self.longestStreak)
-    
-  streak = property(getStreak, setStreak)
-    
-  def getDifficulty(self):
-    return Song.difficulties.get(Config.get("player", "difficulty"))
-    
-  def setDifficulty(self, difficulty):
-    Config.set("player", "difficulty", difficulty.id)
-    
-  difficulty = property(getDifficulty, setDifficulty)
-  
-  def addScore(self, score):
-    self.score += score * self.getScoreMultiplier()
-    
-  def getScoreMultiplier(self):
-    try:
-      return SCORE_MULTIPLIER.index((self.streak / 10) * 10) + 1
-    except ValueError:
-      return len(SCORE_MULTIPLIER)
+    def __init__(self, owner, name):
+        self.owner    = owner
+        self.controls = Controls()
+        self.reset()
+
+    def reset(self):
+        self.score         = 0
+        self._streak       = 0
+        self.notesHit      = 0
+        self.longestStreak = 0
+        self.cheating      = False
+
+    def getName(self):
+        return Config.get("player", "name")
+
+    def setName(self, name):
+        Config.set("player", "name", name)
+
+    name = property(getName, setName)
+
+    def getStreak(self):
+        return self._streak
+
+    def setStreak(self, value):
+        self._streak = value
+        self.longestStreak = max(self._streak, self.longestStreak)
+
+    streak = property(getStreak, setStreak)
+
+    def getDifficulty(self):
+        return Song.difficulties.get(Config.get("player", "difficulty"))
+
+    def setDifficulty(self, difficulty):
+        Config.set("player", "difficulty", difficulty.id)
+
+    difficulty = property(getDifficulty, setDifficulty)
+
+    def addScore(self, score):
+        self.score += score * self.getScoreMultiplier()
+
+    def getScoreMultiplier(self):
+        try:
+            return SCORE_MULTIPLIER.index((self.streak / 10) * 10) + 1
+        except ValueError:
+            return len(SCORE_MULTIPLIER)

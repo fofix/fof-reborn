@@ -25,17 +25,17 @@ import unittest
 import pickle
 
 class ServerTest(unittest.TestCase):
-  def testPlayerCreation(self):
-    pass
-    #s = Server()
-    #s2 = Server()
-    #p = s.createPlayer("Mario")
+    def testPlayerCreation(self):
+        pass
+        #s = Server()
+        #s2 = Server()
+        #p = s.createPlayer("Mario")
 
-    #s2.applyChanges(s.getChanges())
-    #s2.applyChanges(s.getChanges())
+        #s2.applyChanges(s.getChanges())
+        #s2.applyChanges(s.getChanges())
 
-    #print s.players
-    #print s2.players
+        #print s.players
+        #print s2.players
 
 if __name__ == "__main__":
-  unittest.main()
+    unittest.main()

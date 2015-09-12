@@ -72,317 +72,317 @@ Config.define("audio",  "rhythmvol",  float,    1.0,  text = _("Rhythm Volume"),
 Config.define("video",  "fontscale",  float,    1.0,  text = _("Text scale"),      options = dict([(n / 100.0, "%3d%%" % n) for n in range(50, 260, 10)]))
 
 class FullScreenSwitcher(KeyListener):
-  """
-  A keyboard listener that looks for special built-in key combinations,
-  such as the fullscreen toggle (Alt-Enter).
-  """
-  def __init__(self, engine):
-    self.engine = engine
-    self.altStatus = False
-  
-  def keyPressed(self, key, unicode):
-    if key == pygame.K_LALT:
-      self.altStatus = True
-    elif key == pygame.K_RETURN and self.altStatus:
-      if not self.engine.toggleFullscreen():
-        Log.error("Unable to toggle fullscreen mode.")
-      return True
-    elif key == pygame.K_d and self.altStatus:
-      self.engine.setDebugModeEnabled(not self.engine.isDebugModeEnabled())
-      return True
-    elif key == pygame.K_g and self.altStatus and self.engine.isDebugModeEnabled():
-      self.engine.debugLayer.gcDump()
-      return True
+    """
+    A keyboard listener that looks for special built-in key combinations,
+    such as the fullscreen toggle (Alt-Enter).
+    """
+    def __init__(self, engine):
+        self.engine = engine
+        self.altStatus = False
 
-  def keyReleased(self, key):
-    if key == pygame.K_LALT:
-      self.altStatus = False
-      
+    def keyPressed(self, key, unicode):
+        if key == pygame.K_LALT:
+            self.altStatus = True
+        elif key == pygame.K_RETURN and self.altStatus:
+            if not self.engine.toggleFullscreen():
+                Log.error("Unable to toggle fullscreen mode.")
+            return True
+        elif key == pygame.K_d and self.altStatus:
+            self.engine.setDebugModeEnabled(not self.engine.isDebugModeEnabled())
+            return True
+        elif key == pygame.K_g and self.altStatus and self.engine.isDebugModeEnabled():
+            self.engine.debugLayer.gcDump()
+            return True
+
+    def keyReleased(self, key):
+        if key == pygame.K_LALT:
+            self.altStatus = False
+
 class SystemEventHandler(SystemEventListener):
-  """
-  A system event listener that takes care of restarting the game when needed
-  and reacting to screen resize events.
-  """
-  def __init__(self, engine):
-    self.engine = engine
+    """
+    A system event listener that takes care of restarting the game when needed
+    and reacting to screen resize events.
+    """
+    def __init__(self, engine):
+        self.engine = engine
 
-  def screenResized(self, size):
-    self.engine.resizeScreen(size[0], size[1])
-    
-  def restartRequested(self):
-    self.engine.restart()
-    
-  def quit(self):
-    self.engine.quit()
+    def screenResized(self, size):
+        self.engine.resizeScreen(size[0], size[1])
+
+    def restartRequested(self):
+        self.engine.restart()
+
+    def quit(self):
+        self.engine.quit()
 
 class GameEngine(Engine):
-  """The main game engine."""
-  def __init__(self, config = None):
-    """
-    Constructor.
+    """The main game engine."""
+    def __init__(self, config = None):
+        """
+        Constructor.
 
-    @param config:  L{Config} instance for settings
-    """
+        @param config:  L{Config} instance for settings
+        """
 
-    if not config:
-      config = Config.load()
-      
-    self.config  = config
-    
-    fps          = self.config.get("video", "fps")
-    tickrate     = self.config.get("engine", "tickrate")
-    Engine.__init__(self, fps = fps, tickrate = tickrate)
-    
-    pygame.init()
-    
-    self.title             = _("Frets on Fire")
-    self.restartRequested  = False
-    self.handlingException = False
-    self.video             = Video(self.title)
-    self.audio             = Audio()
+        if not config:
+            config = Config.load()
 
-    Log.debug("Initializing audio.")
-    frequency    = self.config.get("audio", "frequency")
-    bits         = self.config.get("audio", "bits")
-    stereo       = self.config.get("audio", "stereo")
-    bufferSize   = self.config.get("audio", "buffersize")
-    
-    self.audio.pre_open(frequency = frequency, bits = bits, stereo = stereo, bufferSize = bufferSize)
-    pygame.init()
-    self.audio.open(frequency = frequency, bits = bits, stereo = stereo, bufferSize = bufferSize)
+        self.config  = config
 
-    Log.debug("Initializing video.")
-    width, height = [int(s) for s in self.config.get("video", "resolution").split("x")]
-    fullscreen    = self.config.get("video", "fullscreen")
-    multisamples  = self.config.get("video", "multisamples")
-    self.video.setMode((width, height), fullscreen = fullscreen, multisamples = multisamples)
+        fps          = self.config.get("video", "fps")
+        tickrate     = self.config.get("engine", "tickrate")
+        Engine.__init__(self, fps = fps, tickrate = tickrate)
 
-    # Enable the high priority timer if configured
-    if self.config.get("engine", "highpriority"):
-      Log.debug("Enabling high priority timer.")
-      self.timer.highPriority = True
+        pygame.init()
 
-    viewport = glGetIntegerv(GL_VIEWPORT)
-    h = viewport[3] - viewport[1]
-    w = viewport[2] - viewport[0]
-    geometry = (0, 0, w, h)
-    self.svg = SvgContext(geometry)
-    self.svg.setRenderingQuality(self.config.get("opengl", "svgquality"))
-    glViewport(int(viewport[0]), int(viewport[1]), int(viewport[2]), int(viewport[3]))
+        self.title             = _("Frets on Fire")
+        self.restartRequested  = False
+        self.handlingException = False
+        self.video             = Video(self.title)
+        self.audio             = Audio()
 
-    self.input     = Input()
-    self.view      = View(self, geometry)
-    self.resizeScreen(w, h)
+        Log.debug("Initializing audio.")
+        frequency    = self.config.get("audio", "frequency")
+        bits         = self.config.get("audio", "bits")
+        stereo       = self.config.get("audio", "stereo")
+        bufferSize   = self.config.get("audio", "buffersize")
 
-    self.resource  = Resource(Version.dataPath())
-    self.server    = None
-    self.sessions  = []
-    self.mainloop  = self.loading
-    
-    # Load game modifications
-    Mod.init(self)
-    theme = Config.load(self.resource.fileName("theme.ini"))
-    Theme.open(theme)
+        self.audio.pre_open(frequency = frequency, bits = bits, stereo = stereo, bufferSize = bufferSize)
+        pygame.init()
+        self.audio.open(frequency = frequency, bits = bits, stereo = stereo, bufferSize = bufferSize)
 
-    # Make sure we are using the new upload URL
-    if self.config.get("game", "uploadurl").startswith("http://kempele.fi"):
-      self.config.set("game", "uploadurl", "http://fretsonfire.sourceforge.net/play")
+        Log.debug("Initializing video.")
+        width, height = [int(s) for s in self.config.get("video", "resolution").split("x")]
+        fullscreen    = self.config.get("video", "fullscreen")
+        multisamples  = self.config.get("video", "multisamples")
+        self.video.setMode((width, height), fullscreen = fullscreen, multisamples = multisamples)
 
-    self.addTask(self.audio, synchronized = False)
-    self.addTask(self.input, synchronized = False)
-    self.addTask(self.view)
-    self.addTask(self.resource, synchronized = False)
-    self.data = Data(self.resource, self.svg)
-    
-    self.input.addKeyListener(FullScreenSwitcher(self), priority = True)
-    self.input.addSystemEventListener(SystemEventHandler(self))
+        # Enable the high priority timer if configured
+        if self.config.get("engine", "highpriority"):
+            Log.debug("Enabling high priority timer.")
+            self.timer.highPriority = True
 
-    self.debugLayer         = None
-    self.startupLayer       = None
-    self.loadingScreenShown = False
+        viewport = glGetIntegerv(GL_VIEWPORT)
+        h = viewport[3] - viewport[1]
+        w = viewport[2] - viewport[0]
+        geometry = (0, 0, w, h)
+        self.svg = SvgContext(geometry)
+        self.svg.setRenderingQuality(self.config.get("opengl", "svgquality"))
+        glViewport(int(viewport[0]), int(viewport[1]), int(viewport[2]), int(viewport[3]))
 
-    Log.debug("Ready.")
+        self.input     = Input()
+        self.view      = View(self, geometry)
+        self.resizeScreen(w, h)
 
-  def setStartupLayer(self, startupLayer):
-    """
-    Set the L{Layer} that will be shown when the all
-    the resources have been loaded. See L{Data}
+        self.resource  = Resource(Version.dataPath())
+        self.server    = None
+        self.sessions  = []
+        self.mainloop  = self.loading
 
-    @param startupLayer:    Startup L{Layer}
-    """
-    self.startupLayer = startupLayer
+        # Load game modifications
+        Mod.init(self)
+        theme = Config.load(self.resource.fileName("theme.ini"))
+        Theme.open(theme)
 
-  def isDebugModeEnabled(self):
-    return bool(self.debugLayer)
-    
-  def setDebugModeEnabled(self, enabled):
-    """
-    Show or hide the debug layer.
+        # Make sure we are using the new upload URL
+        if self.config.get("game", "uploadurl").startswith("http://kempele.fi"):
+            self.config.set("game", "uploadurl", "http://fretsonfire.sourceforge.net/play")
 
-    @type enabled: bool
-    """
-    if enabled:
-      self.debugLayer = DebugLayer(self)
-    else:
-      self.debugLayer = None
-    
-  def toggleFullscreen(self):
-    """
-    Toggle between fullscreen and windowed mode.
+        self.addTask(self.audio, synchronized = False)
+        self.addTask(self.input, synchronized = False)
+        self.addTask(self.view)
+        self.addTask(self.resource, synchronized = False)
+        self.data = Data(self.resource, self.svg)
 
-    @return: True on success
-    """
-    if not self.video.toggleFullscreen():
-      # on windows, the fullscreen toggle kills our textures, se we must restart the whole game
-      self.input.broadcastSystemEvent("restartRequested")
-      self.config.set("video", "fullscreen", not self.video.fullscreen)
-      return True
-    self.config.set("video", "fullscreen", self.video.fullscreen)
-    return True
-    
-  def restart(self):
-    """Restart the game."""
-    if not self.restartRequested:
-      self.restartRequested = True
-      self.input.broadcastSystemEvent("restartRequested")
-    else:
-        # evilynux - With self.audio.close(), calling self.quit() results in
-        #            a crash. Calling the parent directly as a workaround.
+        self.input.addKeyListener(FullScreenSwitcher(self), priority = True)
+        self.input.addSystemEventListener(SystemEventHandler(self))
+
+        self.debugLayer         = None
+        self.startupLayer       = None
+        self.loadingScreenShown = False
+
+        Log.debug("Ready.")
+
+    def setStartupLayer(self, startupLayer):
+        """
+        Set the L{Layer} that will be shown when the all
+        the resources have been loaded. See L{Data}
+
+        @param startupLayer:    Startup L{Layer}
+        """
+        self.startupLayer = startupLayer
+
+    def isDebugModeEnabled(self):
+        return bool(self.debugLayer)
+
+    def setDebugModeEnabled(self, enabled):
+        """
+        Show or hide the debug layer.
+
+        @type enabled: bool
+        """
+        if enabled:
+            self.debugLayer = DebugLayer(self)
+        else:
+            self.debugLayer = None
+
+    def toggleFullscreen(self):
+        """
+        Toggle between fullscreen and windowed mode.
+
+        @return: True on success
+        """
+        if not self.video.toggleFullscreen():
+            # on windows, the fullscreen toggle kills our textures, se we must restart the whole game
+            self.input.broadcastSystemEvent("restartRequested")
+            self.config.set("video", "fullscreen", not self.video.fullscreen)
+            return True
+        self.config.set("video", "fullscreen", self.video.fullscreen)
+        return True
+
+    def restart(self):
+        """Restart the game."""
+        if not self.restartRequested:
+            self.restartRequested = True
+            self.input.broadcastSystemEvent("restartRequested")
+        else:
+                # evilynux - With self.audio.close(), calling self.quit() results in
+                #            a crash. Calling the parent directly as a workaround.
+            Engine.quit(self)
+
+    def quit(self):
+        self.audio.close()
         Engine.quit(self)
-    
-  def quit(self):
-    self.audio.close()
-    Engine.quit(self)
 
-  def resizeScreen(self, width, height):
-    """
-    Resize the game screen.
+    def resizeScreen(self, width, height):
+        """
+        Resize the game screen.
 
-    @param width:   New width in pixels
-    @param height:  New height in pixels
-    """
-    self.view.setGeometry((0, 0, width, height))
-    self.svg.setGeometry((0, 0, width, height))
-    
-  def isServerRunning(self):
-    return bool(self.server)
+        @param width:   New width in pixels
+        @param height:  New height in pixels
+        """
+        self.view.setGeometry((0, 0, width, height))
+        self.svg.setGeometry((0, 0, width, height))
 
-  def startServer(self):
-    """Start the game server."""
-    if not self.server:
-      Log.debug("Starting server.")
-      self.server = Server(self)
-      self.addTask(self.server, synchronized = False)
+    def isServerRunning(self):
+        return bool(self.server)
 
-  def connect(self, host):
-    """
-    Connect to a game server.
+    def startServer(self):
+        """Start the game server."""
+        if not self.server:
+            Log.debug("Starting server.")
+            self.server = Server(self)
+            self.addTask(self.server, synchronized = False)
 
-    @param host:  Name of host to connect to
-    @return:      L{Session} connected to remote server
-    """
-    Log.debug("Connecting to host %s." % host)
-    session = ClientSession(self)
-    session.connect(host)
-    self.addTask(session, synchronized = False)
-    self.sessions.append(session)
-    return session
+    def connect(self, host):
+        """
+        Connect to a game server.
 
-  def stopServer(self):
-    """Stop the game server."""
-    if self.server:
-      Log.debug("Stopping server.")
-      self.removeTask(self.server)
-      self.server = None
+        @param host:  Name of host to connect to
+        @return:      L{Session} connected to remote server
+        """
+        Log.debug("Connecting to host %s." % host)
+        session = ClientSession(self)
+        session.connect(host)
+        self.addTask(session, synchronized = False)
+        self.sessions.append(session)
+        return session
 
-  def disconnect(self, session):
-    """
-    Disconnect a L{Session}
+    def stopServer(self):
+        """Stop the game server."""
+        if self.server:
+            Log.debug("Stopping server.")
+            self.removeTask(self.server)
+            self.server = None
 
-    param session:    L{Session} to disconnect
-    """
-    if session in self.sessions:
-      Log.debug("Disconnecting.")
-      self.removeTask(session)
-      self.sessions.remove(session)
+    def disconnect(self, session):
+        """
+        Disconnect a L{Session}
 
-  def loadSvgDrawing(self, target, name, fileName, textureSize = None):
-    """
-    Load an SVG drawing synchronously.
-    
-    @param target:      An object that will own the drawing
-    @param name:        The name of the attribute the drawing will be assigned to
-    @param fileName:    The name of the file in the data directory
-    @param textureSize  Either None or (x, y), in which case the file will
-                        be rendered to an x by y texture
-    @return:            L{SvgDrawing} instance
-    """
-    return self.data.loadSvgDrawing(target, name, fileName, textureSize)
+        param session:    L{Session} to disconnect
+        """
+        if session in self.sessions:
+            Log.debug("Disconnecting.")
+            self.removeTask(session)
+            self.sessions.remove(session)
 
-  def loading(self):
-    """Loading state loop."""
-    done = Engine.run(self)
-    self.clearScreen()
-    
-    if self.data.essentialResourcesLoaded():
-      if not self.loadingScreenShown:
-        self.loadingScreenShown = True
-        Dialogs.showLoadingScreen(self, self.data.resourcesLoaded)
-        if self.startupLayer:
-          self.view.pushLayer(self.startupLayer)
-        self.mainloop = self.main
-      self.view.render()
-    self.video.flip()
-    return done
+    def loadSvgDrawing(self, target, name, fileName, textureSize = None):
+        """
+        Load an SVG drawing synchronously.
 
-  def clearScreen(self):
-    self.svg.clear(*Theme.backgroundColor)
+        @param target:      An object that will own the drawing
+        @param name:        The name of the attribute the drawing will be assigned to
+        @param fileName:    The name of the file in the data directory
+        @param textureSize  Either None or (x, y), in which case the file will
+                            be rendered to an x by y texture
+        @return:            L{SvgDrawing} instance
+        """
+        return self.data.loadSvgDrawing(target, name, fileName, textureSize)
 
-  def main(self):
-    """Main state loop."""
+    def loading(self):
+        """Loading state loop."""
+        done = Engine.run(self)
+        self.clearScreen()
 
-    # Tune the scheduler priority so that transitions are as smooth as possible
-    if self.view.isTransitionInProgress():
-      self.boostBackgroundThreads(False)
-    else:
-      self.boostBackgroundThreads(True)
-    
-    done = Engine.run(self)
-    self.clearScreen()
-    self.view.render()
-    if self.debugLayer:
-      self.debugLayer.render(1.0, True)
-    self.video.flip()
-    return done
+        if self.data.essentialResourcesLoaded():
+            if not self.loadingScreenShown:
+                self.loadingScreenShown = True
+                Dialogs.showLoadingScreen(self, self.data.resourcesLoaded)
+                if self.startupLayer:
+                    self.view.pushLayer(self.startupLayer)
+                self.mainloop = self.main
+            self.view.render()
+        self.video.flip()
+        return done
 
-  def run(self):
-    try:
-      return self.mainloop()
-    except KeyboardInterrupt:
-      sys.exit(0)
-    except SystemExit:
-      sys.exit(0)
-    except Exception, e:
-      def clearMatrixStack(stack):
+    def clearScreen(self):
+        self.svg.clear(*Theme.backgroundColor)
+
+    def main(self):
+        """Main state loop."""
+
+        # Tune the scheduler priority so that transitions are as smooth as possible
+        if self.view.isTransitionInProgress():
+            self.boostBackgroundThreads(False)
+        else:
+            self.boostBackgroundThreads(True)
+
+        done = Engine.run(self)
+        self.clearScreen()
+        self.view.render()
+        if self.debugLayer:
+            self.debugLayer.render(1.0, True)
+        self.video.flip()
+        return done
+
+    def run(self):
         try:
-          glMatrixMode(stack)
-          for i in range(16):
-            glPopMatrix()
-        except:
-          pass
+            return self.mainloop()
+        except KeyboardInterrupt:
+            sys.exit(0)
+        except SystemExit:
+            sys.exit(0)
+        except Exception, e:
+            def clearMatrixStack(stack):
+                try:
+                    glMatrixMode(stack)
+                    for i in range(16):
+                        glPopMatrix()
+                except:
+                    pass
 
-      if self.handlingException:
-        # A recursive exception is fatal as we can't reliably reset the GL state
-        sys.exit(1)
+            if self.handlingException:
+                # A recursive exception is fatal as we can't reliably reset the GL state
+                sys.exit(1)
 
-      self.handlingException = True
-      Log.error("%s: %s" % (e.__class__, e))
-      import traceback
-      traceback.print_exc()
+            self.handlingException = True
+            Log.error("%s: %s" % (e.__class__, e))
+            import traceback
+            traceback.print_exc()
 
-      clearMatrixStack(GL_PROJECTION)
-      clearMatrixStack(GL_MODELVIEW)
-      
-      Dialogs.showMessage(self, unicode(e))
-      self.handlingException = False
-      return True
+            clearMatrixStack(GL_PROJECTION)
+            clearMatrixStack(GL_MODELVIEW)
+
+            Dialogs.showMessage(self, unicode(e))
+            self.handlingException = False
+            return True

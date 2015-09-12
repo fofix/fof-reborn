@@ -25,47 +25,47 @@ from GameEngine import GameEngine
 from Menu import Menu
 
 subMenu = [
-  ("Bar 1", lambda: 0),
-  ("Bar 2", lambda: 0),
-  ("Bar 3", lambda: 0),
+    ("Bar 1", lambda: 0),
+    ("Bar 2", lambda: 0),
+    ("Bar 3", lambda: 0),
 ]
 
 rootMenu = [
-  ["Foo", lambda: 0],
-  ("Bar >", subMenu),
-  ("Baz", lambda: 0),
+    ["Foo", lambda: 0],
+    ("Bar >", subMenu),
+    ("Baz", lambda: 0),
 ]
 
 class MenuTest(unittest.TestCase):
-  def testMenuNavigation(self):
-    m = Menu(self.e, rootMenu)
-    self.e.view.pushLayer(m)
+    def testMenuNavigation(self):
+        m = Menu(self.e, rootMenu)
+        self.e.view.pushLayer(m)
 
-    while self.e.view.layers and 0:
-      rootMenu[0][0] = "%.1f FPS" % self.e.timer.fpsEstimate
-      self.e.run()
-    # FIXME: keyboard event injection for testing
-     
-  def setUp(self):
-    self.e = GameEngine()
-    
-  def tearDown(self):
-    self.e.quit()
+        while self.e.view.layers and 0:
+            rootMenu[0][0] = "%.1f FPS" % self.e.timer.fpsEstimate
+            self.e.run()
+        # FIXME: keyboard event injection for testing
+
+    def setUp(self):
+        self.e = GameEngine()
+
+    def tearDown(self):
+        self.e.quit()
 
 class MenuTestInteractive(unittest.TestCase):
-  def testMenuNavigation(self):
-    m = Menu(self.e, rootMenu)
-    self.e.view.pushLayer(m)
+    def testMenuNavigation(self):
+        m = Menu(self.e, rootMenu)
+        self.e.view.pushLayer(m)
 
-    while self.e.view.layers:
-      rootMenu[0][0] = "%.1f FPS" % self.e.timer.fpsEstimate
-      self.e.run()
+        while self.e.view.layers:
+            rootMenu[0][0] = "%.1f FPS" % self.e.timer.fpsEstimate
+            self.e.run()
 
-  def setUp(self):
-    self.e = GameEngine()
-    
-  def tearDown(self):
-    self.e.quit()
+    def setUp(self):
+        self.e = GameEngine()
+
+    def tearDown(self):
+        self.e.quit()
 
 if __name__ == "__main__":
-  unittest.main()
+    unittest.main()

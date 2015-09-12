@@ -32,49 +32,49 @@ Config.define("game", "selected_library",  str, "")
 Config.define("game", "selected_song",     str, "")
 
 class SongChoosingScene:
-  pass
+    pass
 
 class SongChoosingSceneServer(SongChoosingScene, SceneServer):
-  pass
+    pass
 
 class SongChoosingSceneClient(SongChoosingScene, SceneClient):
-  def createClient(self, libraryName = None, songName = None):
-    self.wizardStarted = False
-    self.libraryName   = libraryName
-    self.songName      = songName
+    def createClient(self, libraryName = None, songName = None):
+        self.wizardStarted = False
+        self.libraryName   = libraryName
+        self.songName      = songName
 
-  def run(self, ticks):
-    SceneClient.run(self, ticks)
+    def run(self, ticks):
+        SceneClient.run(self, ticks)
 
-    if not self.wizardStarted:
-      self.wizardStarted = True
+        if not self.wizardStarted:
+            self.wizardStarted = True
 
-      if not self.songName:
-        while True:
-          self.libraryName, self.songName = \
-            Dialogs.chooseSong(self.engine, \
-                               selectedLibrary = Config.get("game", "selected_library"),
-                               selectedSong    = Config.get("game", "selected_song"))
-        
-          if not self.songName:
-            self.session.world.finishGame()
-            return
+            if not self.songName:
+                while True:
+                    self.libraryName, self.songName = \
+                        Dialogs.chooseSong(self.engine, \
+                                         selectedLibrary = Config.get("game", "selected_library"),
+                                         selectedSong    = Config.get("game", "selected_song"))
 
-          Config.set("game", "selected_library", self.libraryName)
-          Config.set("game", "selected_song",    self.songName)
-          
-          info = Song.loadSongInfo(self.engine, self.songName, library = self.libraryName)
-          d = Dialogs.chooseItem(self.engine, info.difficulties,
-                                 _("Choose a difficulty:"), selected = self.player.difficulty)
-          if d:
-            self.player.difficulty = d
-            break
-      else:
-        info = Song.loadSongInfo(self.engine, self.songName, library = self.libraryName)
+                    if not self.songName:
+                        self.session.world.finishGame()
+                        return
 
-      # Make sure the difficulty we chose is available
-      if not self.player.difficulty in info.difficulties:
-        self.player.difficulty = info.difficulties[0]
-        
-      self.session.world.deleteScene(self)
-      self.session.world.createScene("GuitarScene", libraryName = self.libraryName, songName = self.songName)
+                    Config.set("game", "selected_library", self.libraryName)
+                    Config.set("game", "selected_song",    self.songName)
+
+                    info = Song.loadSongInfo(self.engine, self.songName, library = self.libraryName)
+                    d = Dialogs.chooseItem(self.engine, info.difficulties,
+                                           _("Choose a difficulty:"), selected = self.player.difficulty)
+                    if d:
+                        self.player.difficulty = d
+                        break
+            else:
+                info = Song.loadSongInfo(self.engine, self.songName, library = self.libraryName)
+
+            # Make sure the difficulty we chose is available
+            if not self.player.difficulty in info.difficulties:
+                self.player.difficulty = info.difficulties[0]
+
+            self.session.world.deleteScene(self)
+            self.session.world.createScene("GuitarScene", libraryName = self.libraryName, songName = self.songName)

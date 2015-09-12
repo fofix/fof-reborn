@@ -36,109 +36,109 @@ import Player
 import Song
 
 class Lobby(Layer, KeyListener, MessageHandler):
-  def __init__(self, engine, session, singlePlayer = False, songName = None):
-    self.engine       = engine
-    self.session      = session
-    self.time         = 0.0
-    self.gameStarted  = False
-    self.singlePlayer = singlePlayer
-    self.songName     = songName
-    self.session.broker.addMessageHandler(self)
+    def __init__(self, engine, session, singlePlayer = False, songName = None):
+        self.engine       = engine
+        self.session      = session
+        self.time         = 0.0
+        self.gameStarted  = False
+        self.singlePlayer = singlePlayer
+        self.songName     = songName
+        self.session.broker.addMessageHandler(self)
 
-  def shown(self):
-    self.engine.input.addKeyListener(self)
+    def shown(self):
+        self.engine.input.addKeyListener(self)
 
-    if self.singlePlayer:
-      self.session.world.createPlayer(_("Player"))
-      if self.songName:
-        self.session.world.startGame(libraryName = Song.DEFAULT_LIBRARY, songName = self.songName)
-      else:
-        self.session.world.startGame()
-    else:
-      n = self.session.id or 1
-      name = Dialogs.getText(self.engine, _("Enter your name:"), _("Player #%d") % n)
-      if name:
-        self.session.world.createPlayer(name)
-      else:
+        if self.singlePlayer:
+            self.session.world.createPlayer(_("Player"))
+            if self.songName:
+                self.session.world.startGame(libraryName = Song.DEFAULT_LIBRARY, songName = self.songName)
+            else:
+                self.session.world.startGame()
+        else:
+            n = self.session.id or 1
+            name = Dialogs.getText(self.engine, _("Enter your name:"), _("Player #%d") % n)
+            if name:
+                self.session.world.createPlayer(name)
+            else:
+                self.engine.view.popLayer(self)
+
+    def hidden(self):
+        self.engine.input.removeKeyListener(self)
+        self.session.broker.removeMessageHandler(self)
+        if not self.gameStarted:
+            self.session.close()
+            self.engine.view.pushLayer(MainMenu.MainMenu(self.engine))
+
+    def handleGameStarted(self, sender):
+        self.gameStarted = True
+        self.engine.addTask(GameTask(self.engine, self.session))
         self.engine.view.popLayer(self)
 
-  def hidden(self):
-    self.engine.input.removeKeyListener(self)
-    self.session.broker.removeMessageHandler(self)
-    if not self.gameStarted:
-      self.session.close()
-      self.engine.view.pushLayer(MainMenu.MainMenu(self.engine))
+    def keyPressed(self, key, unicode):
+        c = self.engine.input.controls.getMapping(key)
+        if c in [Player.CANCEL, Player.KEY2]:
+            self.engine.view.popLayer(self)
+        elif (c in [Player.KEY1] or key == pygame.K_RETURN) and self.canStartGame():
+            self.gameStarted = True
+            self.session.world.startGame()
+        return True
 
-  def handleGameStarted(self, sender):
-    self.gameStarted = True
-    self.engine.addTask(GameTask(self.engine, self.session))
-    self.engine.view.popLayer(self)
+    def keyReleased(self, key):
+        pass
 
-  def keyPressed(self, key, unicode):
-    c = self.engine.input.controls.getMapping(key)
-    if c in [Player.CANCEL, Player.KEY2]:
-      self.engine.view.popLayer(self)
-    elif (c in [Player.KEY1] or key == pygame.K_RETURN) and self.canStartGame():
-      self.gameStarted = True
-      self.session.world.startGame()
-    return True
+    def run(self, ticks):
+        self.time += ticks / 50.0
 
-  def keyReleased(self, key):
-    pass
+    def canStartGame(self):
+        return len(self.session.world.players) > 1 and self.session.isPrimary() and not self.gameStarted
 
-  def run(self, ticks):
-    self.time += ticks / 50.0
+    def render(self, visibility, topMost):
+        if self.singlePlayer:
+            return
 
-  def canStartGame(self):
-    return len(self.session.world.players) > 1 and self.session.isPrimary() and not self.gameStarted
-  
-  def render(self, visibility, topMost):
-    if self.singlePlayer:
-      return
-    
-    self.engine.view.setOrthogonalProjection(normalize = True)
-    font = self.engine.data.font
+        self.engine.view.setOrthogonalProjection(normalize = True)
+        font = self.engine.data.font
 
-    try:
-      v = 1.0 - ((1 - visibility) ** 2)
-      
-      glEnable(GL_BLEND)
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE)
-      glEnable(GL_COLOR_MATERIAL)
+        try:
+            v = 1.0 - ((1 - visibility) ** 2)
 
-      text = _("Lobby (%d players)") % len(self.session.world.players)
-      w, h = font.getStringSize(text)
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE)
+            glEnable(GL_COLOR_MATERIAL)
 
-      x = .5 - w / 2
-      d = 0.0
-      c = 1 - .25 * v
+            text = _("Lobby (%d players)") % len(self.session.world.players)
+            w, h = font.getStringSize(text)
 
-      y = .1 - (1.0 - v) * .2
-        
-      for i, ch in enumerate(text):
-        w, h = font.getStringSize(ch)
-        c = i * .05
-        glColor3f(*colorsys.hsv_to_rgb(.75, c, 1))
-        glPushMatrix()
-        s = .25 * (math.sin(i / 2 + self.time / 4) + 2)
-        glTranslate(-s * w / 2, -s * h / 2, 0)
-        font.render(ch, (x, y), scale = 0.002 * s)
-        glPopMatrix()
-        x += w
+            x = .5 - w / 2
+            d = 0.0
+            c = 1 - .25 * v
 
-      x = .1
-      y = .2 + (1 - v) / 4
-      glColor4f(1, 1, 1, v)
-      
-      for player in self.session.world.players:
-        font.render(player.name, (x, y))
-        y += .08
+            y = .1 - (1.0 - v) * .2
 
-      if self.canStartGame():
-        s = _("Press Enter to Start Game")
-        sz = 0.0013
-        w, h = font.getStringSize(s, scale = sz)
-        font.render(s, (.5 - w / 2, .65), scale = sz)
-        
-    finally:
-      self.engine.view.resetProjection()
+            for i, ch in enumerate(text):
+                w, h = font.getStringSize(ch)
+                c = i * .05
+                glColor3f(*colorsys.hsv_to_rgb(.75, c, 1))
+                glPushMatrix()
+                s = .25 * (math.sin(i / 2 + self.time / 4) + 2)
+                glTranslate(-s * w / 2, -s * h / 2, 0)
+                font.render(ch, (x, y), scale = 0.002 * s)
+                glPopMatrix()
+                x += w
+
+            x = .1
+            y = .2 + (1 - v) / 4
+            glColor4f(1, 1, 1, v)
+
+            for player in self.session.world.players:
+                font.render(player.name, (x, y))
+                y += .08
+
+            if self.canStartGame():
+                s = _("Press Enter to Start Game")
+                sz = 0.0013
+                w, h = font.getStringSize(s, scale = sz)
+                font.render(s, (.5 - w / 2, .65), scale = sz)
+
+        finally:
+            self.engine.view.resetProjection()

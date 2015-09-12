@@ -25,28 +25,28 @@ import Network
 import time
 
 class TestConnection(Network.Connection):
-  def handlePacket(self, packet):
-    self.packet = packet
+    def handlePacket(self, packet):
+        self.packet = packet
 
 class TestServer(Network.Server):
-  def createConnection(self, sock):
-    return TestConnection(sock)
+    def createConnection(self, sock):
+        return TestConnection(sock)
 
 class NetworkTest(unittest.TestCase):
-  def testHandshake(self):
-    s = TestServer()
-    c = TestConnection()
-    c.connect("localhost")
+    def testHandshake(self):
+        s = TestServer()
+        c = TestConnection()
+        c.connect("localhost")
 
-    c.sendPacket("moikka")
+        c.sendPacket("moikka")
 
-    Network.communicate(100)
-    client = s.clients.values()[0]
-    assert client.packet == "moikka"
-    assert client.id == 1
+        Network.communicate(100)
+        client = s.clients.values()[0]
+        assert client.packet == "moikka"
+        assert client.id == 1
 
-  def tearDown(self):
-    Network.shutdown()
+    def tearDown(self):
+        Network.shutdown()
 
 if __name__ == "__main__":
-  unittest.main()
+    unittest.main()

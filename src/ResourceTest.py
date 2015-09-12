@@ -27,59 +27,59 @@ from Engine import Engine
 from Resource import Resource
 
 def loader():
-  return 0xdada
+    return 0xdada
 
 class ResourceTest(unittest.TestCase):
-  def testAsynchLoad(self):
-    self.r = Resource()
-    self.e.addTask(self.r, synchronized = False)
+    def testAsynchLoad(self):
+        self.r = Resource()
+        self.e.addTask(self.r, synchronized = False)
 
-    self.r.load(self, "result", lambda: loader())
+        self.r.load(self, "result", lambda: loader())
 
-    while not self.result:
-      self.e.run()
-    
-    assert self.result == 0xdada
-     
-  def testSynchLoad(self):
-    self.r = Resource()
-    self.e.addTask(self.r, synchronized = False)
+        while not self.result:
+            self.e.run()
 
-    assert self.r.load(self, "result2", loader, synch = True) == 0xdada
-    assert self.result2 == 0xdada
+        assert self.result == 0xdada
 
-  def testAsynchLoadSeries(self):
-    self.r = Resource()
-    self.e.addTask(self.r, synchronized = False)
+    def testSynchLoad(self):
+        self.r = Resource()
+        self.e.addTask(self.r, synchronized = False)
 
-    for i in range(10):
-      self.r.load(self, "result%d" % i, loader)
+        assert self.r.load(self, "result2", loader, synch = True) == 0xdada
+        assert self.result2 == 0xdada
 
-    while not self.result9:
-      self.e.run()
+    def testAsynchLoadSeries(self):
+        self.r = Resource()
+        self.e.addTask(self.r, synchronized = False)
 
-    assert self.result9 == 0xdada
-     
-  def testCallback(self):
-    self.r = Resource()
-    self.e.addTask(self.r, synchronized = False)
-    
-    self.quux = None
-    def loaded(r):
-      self.quux = r
-    
-    self.r.load(self, "fuuba", loader, onLoad = loaded).join()
-    
-    while not self.fuuba:
-      self.e.run()
-    
-    assert self.fuuba == self.quux
-     
-  def setUp(self):
-    self.e = Engine()
-    
-  def tearDown(self):
-    self.e.quit()
+        for i in range(10):
+            self.r.load(self, "result%d" % i, loader)
+
+        while not self.result9:
+            self.e.run()
+
+        assert self.result9 == 0xdada
+
+    def testCallback(self):
+        self.r = Resource()
+        self.e.addTask(self.r, synchronized = False)
+
+        self.quux = None
+        def loaded(r):
+            self.quux = r
+
+        self.r.load(self, "fuuba", loader, onLoad = loaded).join()
+
+        while not self.fuuba:
+            self.e.run()
+
+        assert self.fuuba == self.quux
+
+    def setUp(self):
+        self.e = Engine()
+
+    def tearDown(self):
+        self.e.quit()
 
 if __name__ == "__main__":
-  unittest.main()
+    unittest.main()

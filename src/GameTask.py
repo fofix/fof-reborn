@@ -29,45 +29,45 @@ import Svg
 import Dialogs
 
 class GameTask(Task, KeyListener, MessageHandler):
-  def __init__(self, engine, session, drawMiniViews = False):
-    assert session.world.players, "No players in game"
-    
-    self.engine = engine
-    self.session = session
-    self.time = 0.0
-    self.session.broker.addMessageHandler(self)
-    self.player = self.session.world.getLocalPlayer()
+    def __init__(self, engine, session, drawMiniViews = False):
+        assert session.world.players, "No players in game"
 
-  def quit(self):
-    self.session.broker.removeMessageHandler(self)
-    self.engine.view.popAllLayers()
-    self.session.close()
-    self.engine.view.pushLayer(MainMenu.MainMenu(self.engine))
-    self.engine.removeTask(self)
+        self.engine = engine
+        self.session = session
+        self.time = 0.0
+        self.session.broker.addMessageHandler(self)
+        self.player = self.session.world.getLocalPlayer()
 
-  def handleSceneEntered(self, sender, sceneId, playerId):
-    try:
-      scene  = self.session.world.objects[sceneId]
-      player = self.session.world.objects[playerId]
-      self.engine.view.pushLayer(scene)
-    except KeyError:
-      pass
+    def quit(self):
+        self.session.broker.removeMessageHandler(self)
+        self.engine.view.popAllLayers()
+        self.session.close()
+        self.engine.view.pushLayer(MainMenu.MainMenu(self.engine))
+        self.engine.removeTask(self)
 
-  def handleSceneLeft(self, sender, sceneId, playerId):
-    try:
-      scene  = self.session.world.objects[sceneId]
-      player = self.session.world.objects[playerId]
-      self.engine.view.popLayer(scene)
-    except KeyError:
-      pass
+    def handleSceneEntered(self, sender, sceneId, playerId):
+        try:
+            scene  = self.session.world.objects[sceneId]
+            player = self.session.world.objects[playerId]
+            self.engine.view.pushLayer(scene)
+        except KeyError:
+            pass
 
-  def handleGameFinished(self, sender):
-    self.quit()
-    s            = self.session
-    self.session = None
-    self.engine.disconnect(s)
+    def handleSceneLeft(self, sender, sceneId, playerId):
+        try:
+            scene  = self.session.world.objects[sceneId]
+            player = self.session.world.objects[playerId]
+            self.engine.view.popLayer(scene)
+        except KeyError:
+            pass
 
-  def handleConnectionLost(self, sender):
-    if self.session:
-      Dialogs.showMessage(self.engine, _("Connection lost."))
-      self.quit()
+    def handleGameFinished(self, sender):
+        self.quit()
+        s            = self.session
+        self.session = None
+        self.engine.disconnect(s)
+
+    def handleConnectionLost(self, sender):
+        if self.session:
+            Dialogs.showMessage(self.engine, _("Connection lost."))
+            self.quit()

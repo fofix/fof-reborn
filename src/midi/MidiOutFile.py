@@ -18,8 +18,8 @@ class MidiOutFile(MidiOutStream):
 
         self.raw_out = RawOutstreamFile(raw_out)
         MidiOutStream.__init__(self)
-        
-    
+
+
     def write(self):
         self.raw_out.write()
 
@@ -32,8 +32,8 @@ class MidiOutFile(MidiOutStream):
         trk = self._current_track_buffer
         trk.writeVarLen(self.rel_time())
         trk.writeSlice(slc)
-        
-    
+
+
     #####################
     ## Midi events
 
@@ -168,17 +168,17 @@ class MidiOutFile(MidiOutStream):
         """
         self.event_slice(chr(TUNING_REQUEST))
 
-            
+
     #########################
     # header does not really belong here. But anyhoo!!!
-    
+
     def header(self, format=0, nTracks=1, division=96):
 
         """
         format: type of midi file in [0,1,2]
         nTracks: number of tracks. 1 track for type 0 file
         division: timing division ie. 96 ppq.
-        
+
         """        
         raw = self.raw_out
         raw.writeSlice('MThd')
@@ -238,7 +238,7 @@ class MidiOutFile(MidiOutStream):
         # then write
         raw.writeSlice(track_data)
         raw.writeSlice(eot_slice)
-        
+
 
 
     def sequence_number(self, value):
@@ -427,7 +427,7 @@ if __name__ == '__main__':
 
 
     midi.header(0, 1, 480)
-    
+
     midi.start_of_track()
     midi.sequence_name('Type 0')
     midi.tempo(750000)
@@ -438,10 +438,10 @@ if __name__ == '__main__':
         midi.update_time(96)
         midi.note_off(ch, i, 0x40)
         midi.update_time(0)
-    
+
     midi.update_time(0)
     midi.end_of_track()
-    
+
     midi.eof() # currently optional, should it do the write instead of write??
 
 

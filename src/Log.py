@@ -29,28 +29,28 @@ logFile = open(os.path.join(Resource.getWritableResourcePath(), "fretsonfire.log
 encoding = "iso-8859-1"
 
 if "-v" in sys.argv:
-  quiet = False
-  
+    quiet = False
+
 if os.name == "posix":
-  labels = {
-    "warn":   "\033[1;33m(W)\033[0m",
-    "debug":  "\033[1;34m(D)\033[0m",
-    "notice": "\033[1;32m(N)\033[0m",
-    "error":  "\033[1;31m(E)\033[0m",
-  }
+    labels = {
+        "warn":   "\033[1;33m(W)\033[0m",
+        "debug":  "\033[1;34m(D)\033[0m",
+        "notice": "\033[1;32m(N)\033[0m",
+        "error":  "\033[1;31m(E)\033[0m",
+    }
 else:
-  labels = {
-    "warn":   "(W)",
-    "debug":  "(D)",
-    "notice": "(N)",
-    "error":  "(E)",
-  }
+    labels = {
+        "warn":   "(W)",
+        "debug":  "(D)",
+        "notice": "(N)",
+        "error":  "(E)",
+    }
 
 def log(cls, msg):
-  msg = unicode(msg).encode(encoding, "ignore")
-  if not quiet:
-    print labels[cls] + " " + msg
-  print >>logFile, labels[cls] + " " + msg
+    msg = unicode(msg).encode(encoding, "ignore")
+    if not quiet:
+        print labels[cls] + " " + msg
+    print >>logFile, labels[cls] + " " + msg
 
 warn   = lambda msg: log("warn", msg)
 debug  = lambda msg: log("debug", msg)

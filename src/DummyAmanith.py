@@ -29,32 +29,32 @@ G_NORMAL_RENDERING_QUALITY = 1
 G_HIGH_RENDERING_QUALITY   = 2
 
 class GKernel:
-  pass
+    pass
 
 class GMatrix33:
-  pass
+    pass
 
 class GOpenGLBoard:
-  def __init__(*a, **b):
-    pass
+    def __init__(*a, **b):
+        pass
 
-  def SetShadersEnabled(self, foo):
-    pass
+    def SetShadersEnabled(self, foo):
+        pass
 
-  def SetViewport(self, x, y, w, h):
-    glViewport(int(x), int(y), int(w), int(h))
+    def SetViewport(self, x, y, w, h):
+        glViewport(int(x), int(y), int(w), int(h))
 
-  def SetProjection(self, left, right, bottom, top):
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    glOrtho(left, right, bottom, top, -100, 100)
-    glMatrixMode(GL_MODELVIEW)
+    def SetProjection(self, left, right, bottom, top):
+        glMatrixMode(GL_PROJECTION)
+        glLoadIdentity()
+        glOrtho(left, right, bottom, top, -100, 100)
+        glMatrixMode(GL_MODELVIEW)
 
-  def SetRenderingQuality(self, q):
-    pass
+    def SetRenderingQuality(self, q):
+        pass
 
-  def Clear(self, r, g, b, a):
-    glDepthMask(1)
-    glEnable(GL_COLOR_MATERIAL)
-    glClearColor(r, g, b, a)
-    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    def Clear(self, r, g, b, a):
+        glDepthMask(1)
+        glEnable(GL_COLOR_MATERIAL)
+        glClearColor(r, g, b, a)
+        glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)

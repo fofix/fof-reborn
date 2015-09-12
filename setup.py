@@ -27,54 +27,54 @@ import sys, SceneFactory, Version, glob, os
 import distutils.command.sdist
 
 options = {
-  "py2exe": {
-    "dist_dir":  "dist/win32",
+    "py2exe": {
+        "dist_dir":  "dist/win32",
     "includes":  SceneFactory.scenes,
     "excludes":  [
-      "OpenGL",   # OpenGL must be excluded and handled manually due to a py2exe bug
-      "glew.gl.apple",
-      "glew.gl.ati",
-      "glew.gl.atix",
-      "glew.gl.hp",
-      "glew.gl.ibm",
-      "glew.gl.ingr",
-      "glew.gl.intel",
-      "glew.gl.ktx",
-      "glew.gl.mesa",
-      "glew.gl.oml",
-      "glew.gl.pgi",
-      "glew.gl.rend",
-      "glew.gl.s3",
-      "glew.gl.sgi",
-      "glew.gl.sgis",
-      "glew.gl.sgix",
-      "glew.gl.sun",
-      "glew.gl.sunx",
-      "glew.gl.threedfx",
-      "glew.gl.win",
-      "ode",
-      "_ssl",
-      "bz2",
-      "email",
-      "calendar",
-      "doctest",
-      "ftplib",
-      "getpass",
-      "gopherlib",
-      "macpath",
-      "macurl2path",
-      "GimpGradientFile",
-      "GimpPaletteFile",
-      "PaletteFile",
-      "macosx",
-      "matplotlib",
-      "Tkinter",
-      "curses",
+        "OpenGL",   # OpenGL must be excluded and handled manually due to a py2exe bug
+        "glew.gl.apple",
+        "glew.gl.ati",
+        "glew.gl.atix",
+        "glew.gl.hp",
+        "glew.gl.ibm",
+        "glew.gl.ingr",
+        "glew.gl.intel",
+        "glew.gl.ktx",
+        "glew.gl.mesa",
+        "glew.gl.oml",
+        "glew.gl.pgi",
+        "glew.gl.rend",
+        "glew.gl.s3",
+        "glew.gl.sgi",
+        "glew.gl.sgis",
+        "glew.gl.sgix",
+        "glew.gl.sun",
+        "glew.gl.sunx",
+        "glew.gl.threedfx",
+        "glew.gl.win",
+        "ode",
+        "_ssl",
+        "bz2",
+        "email",
+        "calendar",
+        "doctest",
+        "ftplib",
+        "getpass",
+        "gopherlib",
+        "macpath",
+        "macurl2path",
+        "GimpGradientFile",
+        "GimpPaletteFile",
+        "PaletteFile",
+        "macosx",
+        "matplotlib",
+        "Tkinter",
+        "curses",
     ],
     "optimize":  2,
   },
- "py2app": {
-   'app': ["src/FretsOnFire.py"],
+    "py2app": {
+        'app': ["src/FretsOnFire.py"],
    'argv_emulation': True,
    'dist_dir': 'dist/mac',
    'frameworks': '/opt/local/lib/libvorbisfile.dylib',
@@ -82,38 +82,38 @@ options = {
    'iconfile': 'data/icon_mac_composed.icns',
    'includes': SceneFactory.scenes,
    'excludes': [
-    ]
+       ]
   }
 }
 
 # Reuse the manifest file from "python setup.py sdist"
 try:
-  dataFiles = []
-  ignoreExts = [".po", ".py", ".pot"]
-  for line in open("MANIFEST").readlines():
-    fn = line.strip()
-    if any([fn.endswith(e) for e in ignoreExts]): continue
-    if fn in ["Makefile", "MANIFEST", "MANIFEST.in"]: continue
-    dataFiles.append((os.path.dirname(fn), [fn]))
+    dataFiles = []
+    ignoreExts = [".po", ".py", ".pot"]
+    for line in open("MANIFEST").readlines():
+        fn = line.strip()
+        if any([fn.endswith(e) for e in ignoreExts]): continue
+        if fn in ["Makefile", "MANIFEST", "MANIFEST.in"]: continue
+        dataFiles.append((os.path.dirname(fn), [fn]))
 except IOError:
-  print "Unable to open MANIFEST. Please run python setup.py sdist -o to generate it."
-  dataFiles = []
+    print "Unable to open MANIFEST. Please run python setup.py sdist -o to generate it."
+    dataFiles = []
 
 extraOpts = {}
 if os.name == "nt":
-  import py2exe
-  setupRequires = ["py2exe"]
-  extraOpts["windows"] = [
-    {
-      "script":          "src/FretsOnFire.py",
-      "icon_resources":  [(1, "data/icon.ico")]
-    }
-  ]
-  extraOpts["zipfile"] = "data/library.zip"
+    import py2exe
+    setupRequires = ["py2exe"]
+    extraOpts["windows"] = [
+        {
+            "script":          "src/FretsOnFire.py",
+        "icon_resources":  [(1, "data/icon.ico")]
+      }
+    ]
+    extraOpts["zipfile"] = "data/library.zip"
 elif sys.platform == "darwin":
-  setupRequires = ["py2app"]
+    setupRequires = ["py2app"]
 else:
-  setupRequires = []
+    setupRequires = []
 
 setup(version = Version.version(),
       name = "Frets on Fire",

@@ -20,7 +20,7 @@ class MidiOutStream:
     """
 
     def __init__(self):
-        
+
         # the time is rather global, so it needs to be stored 
         # here. Otherwise there would be no really simple way to 
         # calculate it. The alternative would be to have each event 
@@ -50,7 +50,7 @@ class MidiOutStream:
         """
         self._relative_time = 0
         self._absolute_time = 0
-        
+
     def rel_time(self):
         "Returns the relative time"
         return self._relative_time
@@ -60,7 +60,7 @@ class MidiOutStream:
         return self._absolute_time
 
     # running status methods
-    
+
     def reset_run_stat(self):
         "Invalidates the running status"
         self._running_status = None
@@ -74,16 +74,16 @@ class MidiOutStream:
         return self._running_status
 
     # track handling event handlers
-    
+
     def set_current_track(self, new_track):
         "Sets the current track number"
         self._current_track = new_track
-    
+
     def get_current_track(self):
         "Returns the current track number"
         return self._current_track
-    
-    
+
+
     #####################
     ## Midi events
 
@@ -196,7 +196,7 @@ class MidiOutStream:
         """
         pass
 
-            
+
     def midi_time_code(self, msg_type, values):
         """
         msg_type: 0-7
@@ -207,7 +207,7 @@ class MidiOutStream:
 
     #########################
     # header does not really belong here. But anyhoo!!!
-    
+
     def header(self, format=0, nTracks=1, division=96):
 
         """
@@ -231,7 +231,7 @@ class MidiOutStream:
 
 
     def meta_event(self, meta_type, data):
-        
+
         """
         Handles any undefined meta events
         """
@@ -468,4 +468,4 @@ if __name__ == '__main__':
     midiOut.note_on(0, 63, 127)
     midiOut.note_off(0, 63, 127)
 
-    
+

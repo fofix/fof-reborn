@@ -28,10 +28,10 @@ import os
 
 # This trickery is needed to get OpenGL 3.x working with py2exe
 if hasattr(sys, "frozen") and os.name == "nt":
-  import ctypes
-  from ctypes import util
-  sys.path.insert(0, "data/PyOpenGL-3.0.0a5-py2.5.egg")
-  sys.path.insert(0, "data/setuptools-0.6c8-py2.5.egg")
+    import ctypes
+    from ctypes import util
+    sys.path.insert(0, "data/PyOpenGL-3.0.0a5-py2.5.egg")
+    sys.path.insert(0, "data/setuptools-0.6c8-py2.5.egg")
 
 # Register the latin-1 encoding
 import codecs
@@ -56,60 +56,60 @@ Options:
 """ % {"prog": sys.argv[0] }
 
 if __name__ == "__main__":
-  try:
-    opts, args = getopt.getopt(sys.argv[1:], "vp:", ["verbose", "play="])
-  except getopt.GetoptError:
-    print usage
-    sys.exit(1)
-
-  songName = None
-  for opt, arg in opts:
-    if opt in ["--verbose", "-v"]:
-      Log.quiet = False
-    elif opt in ["--play", "-p"]:
-      songName = arg
-
-  while True:
-    config = Config.load(Version.appName() + ".ini", setAsDefault = True)
-    engine = GameEngine(config)
-    menu   = MainMenu(engine, songName = songName)
-    engine.setStartupLayer(menu)
-
     try:
-      import psyco
-      psyco.profile()
-    except:
-      Log.warn("Unable to enable psyco.")
+        opts, args = getopt.getopt(sys.argv[1:], "vp:", ["verbose", "play="])
+    except getopt.GetoptError:
+        print usage
+        sys.exit(1)
 
-    try:
-      while engine.run():
-        pass
-    except KeyboardInterrupt:
-        pass
+    songName = None
+    for opt, arg in opts:
+        if opt in ["--verbose", "-v"]:
+            Log.quiet = False
+        elif opt in ["--play", "-p"]:
+            songName = arg
 
-    if engine.restartRequested:
-      Log.notice("Restarting.")
+    while True:
+        config = Config.load(Version.appName() + ".ini", setAsDefault = True)
+        engine = GameEngine(config)
+        menu   = MainMenu(engine, songName = songName)
+        engine.setStartupLayer(menu)
 
-      try:
-        # Determine whether were running from an exe or not
-        if hasattr(sys, "frozen"):
-          if os.name == "nt":
-            os.execl("FretsOnFire.exe", "FretsOnFire.exe", *sys.argv[1:])
-          elif sys.platform == "darwin":
-            # This exit code tells the launcher script to restart the game
-            sys.exit(100)
-          else:
-            os.execl("./FretsOnFire", "./FretsOnFire", *sys.argv[1:])
+        try:
+            import psyco
+            psyco.profile()
+        except:
+            Log.warn("Unable to enable psyco.")
+
+        try:
+            while engine.run():
+                pass
+        except KeyboardInterrupt:
+            pass
+
+        if engine.restartRequested:
+            Log.notice("Restarting.")
+
+            try:
+            # Determine whether were running from an exe or not
+                if hasattr(sys, "frozen"):
+                    if os.name == "nt":
+                        os.execl("FretsOnFire.exe", "FretsOnFire.exe", *sys.argv[1:])
+                    elif sys.platform == "darwin":
+                        # This exit code tells the launcher script to restart the game
+                        sys.exit(100)
+                    else:
+                        os.execl("./FretsOnFire", "./FretsOnFire", *sys.argv[1:])
+                else:
+                    if os.name == "nt":
+                        bin = "c:/python25/python"
+                    else:
+                        bin = "/usr/bin/python"
+                    os.execl(bin, bin, "FretsOnFire.py", *sys.argv[1:])
+            except:
+                Log.warn("Restart failed.")
+                raise
+            break
         else:
-          if os.name == "nt":
-            bin = "c:/python25/python"
-          else:
-            bin = "/usr/bin/python"
-          os.execl(bin, bin, "FretsOnFire.py", *sys.argv[1:])
-      except:
-        Log.warn("Restart failed.")
-        raise
-      break
-    else:
-      break
-  engine.quit()
+            break
+    engine.quit()

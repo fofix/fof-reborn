@@ -34,15 +34,15 @@ Config.define("theme", "fret3_color",       str, "#3333FF")
 Config.define("theme", "fret4_color",       str, "#FF22FF")
 
 def hexToColor(color):
-  if color[0] == "#":
-    color = color[1:]
-    if len(color) == 3:
-      return (int(color[0], 16) / 15.0, int(color[1], 16) / 15.0, int(color[2], 16) / 15.0)
-    return (int(color[0:2], 16) / 255.0, int(color[2:4], 16) / 255.0, int(color[4:6], 16) / 255.0)
-  return (0, 0, 0)
-    
+    if color[0] == "#":
+        color = color[1:]
+        if len(color) == 3:
+            return (int(color[0], 16) / 15.0, int(color[1], 16) / 15.0, int(color[2], 16) / 15.0)
+        return (int(color[0:2], 16) / 255.0, int(color[2:4], 16) / 255.0, int(color[4:6], 16) / 255.0)
+    return (0, 0, 0)
+
 def colorToHex(color):
-  return "#" + ("".join(["%02x" % int(c * 255) for c in color]))
+    return "#" + ("".join(["%02x" % int(c * 255) for c in color]))
 
 backgroundColor = None
 baseColor       = None
@@ -50,14 +50,14 @@ selectedColor   = None
 fretColors      = None
 
 def open(config):
-  global backgroundColor, baseColor, selectedColor, fretColors
-  backgroundColor = hexToColor(config.get("theme", "background_color"))
-  baseColor       = hexToColor(config.get("theme", "base_color"))
-  selectedColor   = hexToColor(config.get("theme", "selected_color"))
-  fretColors      = [hexToColor(config.get("theme", "fret%d_color" % i)) for i in range(5)]
+    global backgroundColor, baseColor, selectedColor, fretColors
+    backgroundColor = hexToColor(config.get("theme", "background_color"))
+    baseColor       = hexToColor(config.get("theme", "base_color"))
+    selectedColor   = hexToColor(config.get("theme", "selected_color"))
+    fretColors      = [hexToColor(config.get("theme", "fret%d_color" % i)) for i in range(5)]
 
 def setSelectedColor(alpha = 1.0):
-  glColor4f(*(selectedColor + (alpha,)))
+    glColor4f(*(selectedColor + (alpha,)))
 
 def setBaseColor(alpha = 1.0):
-  glColor4f(*(baseColor + (alpha,)))
+    glColor4f(*(baseColor + (alpha,)))

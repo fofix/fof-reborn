@@ -24,177 +24,177 @@ import pickle
 from StringIO import StringIO
 
 class Serializer(pickle.Pickler):
-  def persistent_id(self, obj):
-    return getattr(obj, "id", None)
+    def persistent_id(self, obj):
+        return getattr(obj, "id", None)
 
 class Unserializer(pickle.Unpickler):
-  def __init__(self, manager, data):
-    pickle.Unpickler.__init__(self, data)
-    self.manager = manager
-    
-  def persistent_load(self, id):
-    return self.manager.getObject(id)
+    def __init__(self, manager, data):
+        pickle.Unpickler.__init__(self, data)
+        self.manager = manager
+
+    def persistent_load(self, id):
+        return self.manager.getObject(id)
 
 def serialize(data):
-  file = StringIO()
-  Serializer(file, protocol = 2).dump(data)
-  return file.getvalue()
+    file = StringIO()
+    Serializer(file, protocol = 2).dump(data)
+    return file.getvalue()
 
 def unserialize(manager, data):
-  return Unserializer(manager, StringIO(data)).load()
+    return Unserializer(manager, StringIO(data)).load()
 
 class Manager:
-  MSG_CREATE = 0
-  MSG_CHANGE = 1
-  MSG_DELETE = 2
-  
-  def __init__(self, id = 0):
-    self.id = id
-    self.reset()
+    MSG_CREATE = 0
+    MSG_CHANGE = 1
+    MSG_DELETE = 2
 
-  def setId(self, id):
-    self.id = id
+    def __init__(self, id = 0):
+        self.id = id
+        self.reset()
 
-  def reset(self):
-    self.objects = {}
-    self.__creationData = {}
-    self.__created = []
-    self.__changed = []
-    self.__deleted = []
-    self.__idCounter = 0
+    def setId(self, id):
+        self.id = id
 
-  def createObject(self, instance, *args, **kwargs):
-    self.__idCounter += 1
-    id = self.globalObjectId(self.__idCounter)
-    self.objects[id] = instance
-    self.__creationData[id] = (instance.__class__, args, kwargs)
-    self.__created.append(instance)
-    return id
+    def reset(self):
+        self.objects = {}
+        self.__creationData = {}
+        self.__created = []
+        self.__changed = []
+        self.__deleted = []
+        self.__idCounter = 0
 
-  def setChanged(self, obj):
-    if not obj in self.__changed:
-      self.__changed.append(obj)
+    def createObject(self, instance, *args, **kwargs):
+        self.__idCounter += 1
+        id = self.globalObjectId(self.__idCounter)
+        self.objects[id] = instance
+        self.__creationData[id] = (instance.__class__, args, kwargs)
+        self.__created.append(instance)
+        return id
 
-  def deleteObject(self, obj):
-    del self.objects[obj.id]
-    del self.__creationData[obj.id]
-    if obj in self.__created: self.__created.remove(obj)
-    self.__deleted.append(obj.id)
+    def setChanged(self, obj):
+        if not obj in self.__changed:
+            self.__changed.append(obj)
 
-  def getObject(self, id):
-    return self.objects.get(id, None)
+    def deleteObject(self, obj):
+        del self.objects[obj.id]
+        del self.__creationData[obj.id]
+        if obj in self.__created: self.__created.remove(obj)
+        self.__deleted.append(obj.id)
 
-  def getChanges(self, everything = False):
-    data = []
-    if everything:
-      data += [(self.MSG_CREATE, [(id, data) for id, data in self.__creationData.items()])]
-      data += [(self.MSG_CHANGE, [(o.id, o.getChanges(everything = True)) for o in self.objects.values()])]
-    else:
-      if self.__created: data += [(self.MSG_CREATE, [(o.id, self.__creationData[o.id]) for o in self.__created])]
-      if self.__changed: data += [(self.MSG_CHANGE, [(o.id, o.getChanges()) for o in self.__changed])]
-      if self.__deleted: data += [(self.MSG_DELETE, self.__deleted)]
-      self.__created = []
-      self.__changed = []
-      self.__deleted = []
-    return [serialize(d) for d in data]
+    def getObject(self, id):
+        return self.objects.get(id, None)
 
-  def globalObjectId(self, objId):
-    return (self.id << 20) + objId
+    def getChanges(self, everything = False):
+        data = []
+        if everything:
+            data += [(self.MSG_CREATE, [(id, data) for id, data in self.__creationData.items()])]
+            data += [(self.MSG_CHANGE, [(o.id, o.getChanges(everything = True)) for o in self.objects.values()])]
+        else:
+            if self.__created: data += [(self.MSG_CREATE, [(o.id, self.__creationData[o.id]) for o in self.__created])]
+            if self.__changed: data += [(self.MSG_CHANGE, [(o.id, o.getChanges()) for o in self.__changed])]
+            if self.__deleted: data += [(self.MSG_DELETE, self.__deleted)]
+            self.__created = []
+            self.__changed = []
+            self.__deleted = []
+        return [serialize(d) for d in data]
 
-  def applyChanges(self, managerId, data):
-    for d in data:
-      try:
-        msg, data = unserialize(self, d)
-        if msg == self.MSG_CREATE:
-          for id, data in data:
-            objectClass, args, kwargs = data
-            self.__creationData[id] = data
-            self.objects[id] = objectClass(id = id, manager = self, *args, **kwargs)
-        elif msg == self.MSG_CHANGE:
-          for id, data in data:
-            if data: self.objects[id].applyChanges(data)
-        elif msg == self.MSG_DELETE:
-          id = data
-          del self.__creationData[id]
-          del self.objects[id]
-      except Exception, e:
-        print "Exception %s while processing incoming changes from manager %s." % (str(e), managerId)
-        raise
+    def globalObjectId(self, objId):
+        return (self.id << 20) + objId
+
+    def applyChanges(self, managerId, data):
+        for d in data:
+            try:
+                msg, data = unserialize(self, d)
+                if msg == self.MSG_CREATE:
+                    for id, data in data:
+                        objectClass, args, kwargs = data
+                        self.__creationData[id] = data
+                        self.objects[id] = objectClass(id = id, manager = self, *args, **kwargs)
+                elif msg == self.MSG_CHANGE:
+                    for id, data in data:
+                        if data: self.objects[id].applyChanges(data)
+                elif msg == self.MSG_DELETE:
+                    id = data
+                    del self.__creationData[id]
+                    del self.objects[id]
+            except Exception, e:
+                print "Exception %s while processing incoming changes from manager %s." % (str(e), managerId)
+                raise
 
 def enableGlobalManager():
-  global manager
-  manager = Manager()
+    global manager
+    manager = Manager()
 
 class Message:
-  classes = {}
-  
-  def __init__(self):
-    if not self.__class__ in self.classes:
-      self.classes[self.__class__] = len(self.classes)
-    self.id = self.classes[self.__class__]
+    classes = {}
+
+    def __init__(self):
+        if not self.__class__ in self.classes:
+            self.classes[self.__class__] = len(self.classes)
+        self.id = self.classes[self.__class__]
 
 class ObjectCreated(Message):
-  pass    
+    pass    
 
 class ObjectDeleted(Message):
-  def __init__(self, obj):
-    self.object = obj
+    def __init__(self, obj):
+        self.object = obj
 
 class Object(object):
-  def __init__(self, id = None, manager = None, *args, **kwargs):
-    self.__modified = {}
-    self.__messages = []
-    self.__messageMap = {}
-    self.__shared = []
-    #if not manager: manager = globals()["manager"]
-    self.manager = manager
-    self.id = id or manager.createObject(self, *args, **kwargs)
+    def __init__(self, id = None, manager = None, *args, **kwargs):
+        self.__modified = {}
+        self.__messages = []
+        self.__messageMap = {}
+        self.__shared = []
+        #if not manager: manager = globals()["manager"]
+        self.manager = manager
+        self.id = id or manager.createObject(self, *args, **kwargs)
 
-  def share(self, *attr):
-    [(self.__shared.append(str(a)), self.__modified.__setitem__(a, self.__dict__[a])) for a in attr]
+    def share(self, *attr):
+        [(self.__shared.append(str(a)), self.__modified.__setitem__(a, self.__dict__[a])) for a in attr]
 
-  def __setattr__(self, attr, value):
-    if attr in getattr(self, "_Object__shared", {}):
-      self.__modified[attr] = value
-      self.manager.setChanged(self)
-    object.__setattr__(self, attr, value)
+    def __setattr__(self, attr, value):
+        if attr in getattr(self, "_Object__shared", {}):
+            self.__modified[attr] = value
+            self.manager.setChanged(self)
+        object.__setattr__(self, attr, value)
 
-  def delete(self):
-    self.emit(ObjectDeleted(self))
-    self.manager.deleteObject(self)
+    def delete(self):
+        self.emit(ObjectDeleted(self))
+        self.manager.deleteObject(self)
 
-  def getChanges(self, everything = False):
-    if self.__messages:
-      self.__modified["_Object__messages"] = self.__messages
-    
-    self.__processMessages()
+    def getChanges(self, everything = False):
+        if self.__messages:
+            self.__modified["_Object__messages"] = self.__messages
 
-    if everything:
-      return dict([(k, getattr(self, k)) for k in self.__shared])
+        self.__processMessages()
 
-    if self.__modified:
-      (data, self.__modified) = (self.__modified, {})
-      return data
+        if everything:
+            return dict([(k, getattr(self, k)) for k in self.__shared])
 
-  def applyChanges(self, data):
-    self.__dict__.update(data)
-    self.__processMessages()
-    
-  def emit(self, message):
-    self.__messages.append(message)
+        if self.__modified:
+            (data, self.__modified) = (self.__modified, {})
+            return data
 
-  def connect(self, messageClass, callback):
-    if not messageClass in self.__messageMap:
-      self.__messageMap[messageClass] = []
-    self.__messageMap[messageClass].append(callback)
+    def applyChanges(self, data):
+        self.__dict__.update(data)
+        self.__processMessages()
 
-  def disconnect(self, messageClass, callback):
-    if messageClass in self.__messageMap:
-      self.__messageMap[messageClass].remove(callback)
+    def emit(self, message):
+        self.__messages.append(message)
 
-  def __processMessages(self):
-    for m in self.__messages:
-      if m.__class__ in self.__messageMap:
-        for c in self.__messageMap[m.__class__]:
-          c(m)
-    self.__messages = []
+    def connect(self, messageClass, callback):
+        if not messageClass in self.__messageMap:
+            self.__messageMap[messageClass] = []
+        self.__messageMap[messageClass].append(callback)
+
+    def disconnect(self, messageClass, callback):
+        if messageClass in self.__messageMap:
+            self.__messageMap[messageClass].remove(callback)
+
+    def __processMessages(self):
+        for m in self.__messages:
+            if m.__class__ in self.__messageMap:
+                for c in self.__messageMap[m.__class__]:
+                    c(m)
+        self.__messages = []

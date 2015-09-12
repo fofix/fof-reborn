@@ -26,23 +26,23 @@ import pygame
 from Timer import Timer
 
 class TimerTest(unittest.TestCase):
-  def setUp(self):
-    pygame.init()
+    def setUp(self):
+        pygame.init()
 
-  def tearDown(self):
-    pygame.quit()
-  
-  def testFrameLimiter(self):
-    t = Timer(fps = 60)
+    def tearDown(self):
+        pygame.quit()
 
-    fps = []
-    while t.frame < 100:
-      ticks = list(t.advanceFrame())
-      fps.append(t.fpsEstimate)
+    def testFrameLimiter(self):
+        t = Timer(fps = 60)
 
-    fps = fps[30:]
-    avgFps = sum(fps) / len(fps)
-    assert 0.8 * t.fps < avgFps < 1.2 * t.fps
+        fps = []
+        while t.frame < 100:
+            ticks = list(t.advanceFrame())
+            fps.append(t.fpsEstimate)
+
+        fps = fps[30:]
+        avgFps = sum(fps) / len(fps)
+        assert 0.8 * t.fps < avgFps < 1.2 * t.fps
 
 if __name__ == "__main__":
-  unittest.main()
+    unittest.main()

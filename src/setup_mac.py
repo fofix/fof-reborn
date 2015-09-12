@@ -14,13 +14,13 @@ import amanith
 APP = ['FretsOnFire.py']
 
 OPTIONS = {
- 'argv_emulation': True,
- 'dist_dir': '../dist',
- 'dylib_excludes': 'OpenGL,AGL',
- 'frameworks' : '../../amanith/lib/libamanith.dylib, ../../glew/lib/libGLEW.dylib', 
- 'iconfile': '../data/icon_mac_composed.icns',
- 'includes': SceneFactory.scenes,
- 'excludes': ['glew.gl.apple'
+    'argv_emulation': True,
+    'dist_dir': '../dist',
+    'dylib_excludes': 'OpenGL,AGL',
+    'frameworks' : '../../amanith/lib/libamanith.dylib, ../../glew/lib/libGLEW.dylib', 
+    'iconfile': '../data/icon_mac_composed.icns',
+    'includes': SceneFactory.scenes,
+    'excludes': ['glew.gl.apple'
       "glew.gl.ati",
       "glew.gl.atix",
       "glew.gl.hp",

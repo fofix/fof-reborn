@@ -27,68 +27,68 @@ from OpenGL.GL.ARB.multisample import *
 import Log
 
 class Video:
-  def __init__(self, caption = "Game"):
-    self.screen     = None
-    self.caption    = caption
-    self.fullscreen = False
-    self.flags      = True
+    def __init__(self, caption = "Game"):
+        self.screen     = None
+        self.caption    = caption
+        self.fullscreen = False
+        self.flags      = True
 
-  def setMode(self, resolution, fullscreen = False, flags = pygame.OPENGL | pygame.DOUBLEBUF,
-              multisamples = 0):
-    if fullscreen:
-      flags |= pygame.FULLSCREEN
-      
-    self.flags      = flags
-    self.fullscreen = fullscreen
+    def setMode(self, resolution, fullscreen = False, flags = pygame.OPENGL | pygame.DOUBLEBUF,
+                multisamples = 0):
+        if fullscreen:
+            flags |= pygame.FULLSCREEN
 
-    try:    
-      pygame.display.quit()
-    except:
-      pass
-      
-    pygame.display.init()
-    
-    pygame.display.gl_set_attribute(pygame.GL_RED_SIZE,   8)
-    pygame.display.gl_set_attribute(pygame.GL_GREEN_SIZE, 8)
-    pygame.display.gl_set_attribute(pygame.GL_BLUE_SIZE,  8)
-    pygame.display.gl_set_attribute(pygame.GL_ALPHA_SIZE, 8)
-      
-    if multisamples:
-      pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLEBUFFERS, 1);
-      pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, multisamples);
+        self.flags      = flags
+        self.fullscreen = fullscreen
 
-    try:
-      self.screen = pygame.display.set_mode(resolution, flags)
-    except Exception, e:
-      Log.error(str(e))
-      if multisamples:
-        Log.warn("Video setup failed. Trying without antialiasing.")
-        pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLEBUFFERS, 0);
-        pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, 0);
-        multisamples = 0
-        self.screen = pygame.display.set_mode(resolution, flags)
-      else:
-        Log.error("Video setup failed. Make sure your graphics card supports 32 bit display modes.")
-        raise
+        try:    
+            pygame.display.quit()
+        except:
+            pass
 
-    pygame.display.set_caption(self.caption)
-    pygame.mouse.set_visible(False)
+        pygame.display.init()
 
-    if multisamples:
-      try:
-        glEnable(GL_MULTISAMPLE_ARB)
-      except:
-        pass
+        pygame.display.gl_set_attribute(pygame.GL_RED_SIZE,   8)
+        pygame.display.gl_set_attribute(pygame.GL_GREEN_SIZE, 8)
+        pygame.display.gl_set_attribute(pygame.GL_BLUE_SIZE,  8)
+        pygame.display.gl_set_attribute(pygame.GL_ALPHA_SIZE, 8)
 
-    return bool(self.screen)
-    
-  def toggleFullscreen(self):
-    assert self.screen
-    
-    return pygame.display.toggle_fullscreen()
+        if multisamples:
+            pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLEBUFFERS, 1);
+            pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, multisamples);
 
-  def flip(self):
-    pygame.display.flip()
+        try:
+            self.screen = pygame.display.set_mode(resolution, flags)
+        except Exception, e:
+            Log.error(str(e))
+            if multisamples:
+                Log.warn("Video setup failed. Trying without antialiasing.")
+                pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLEBUFFERS, 0);
+                pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, 0);
+                multisamples = 0
+                self.screen = pygame.display.set_mode(resolution, flags)
+            else:
+                Log.error("Video setup failed. Make sure your graphics card supports 32 bit display modes.")
+                raise
 
-  def getVideoModes(self):
-    return pygame.display.list_modes()
+        pygame.display.set_caption(self.caption)
+        pygame.mouse.set_visible(False)
+
+        if multisamples:
+            try:
+                glEnable(GL_MULTISAMPLE_ARB)
+            except:
+                pass
+
+        return bool(self.screen)
+
+    def toggleFullscreen(self):
+        assert self.screen
+
+        return pygame.display.toggle_fullscreen()
+
+    def flip(self):
+        pygame.display.flip()
+
+    def getVideoModes(self):
+        return pygame.display.list_modes()

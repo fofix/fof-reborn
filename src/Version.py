@@ -25,24 +25,24 @@ import os
 VERSION = '1.3'
 
 def appName():
-  return "fretsonfire"
+    return "fretsonfire"
 
 def revision():
-  return int("$LastChangedRevision: 110 $".split(" ")[1])
+    return int("$LastChangedRevision: 110 $".split(" ")[1])
 
 def version():
-  return "%s.%d" % (VERSION, revision())
+    return "%s.%d" % (VERSION, revision())
 
 def dataPath():
-  # Determine whether were running from an exe or not
-  if hasattr(sys, "frozen"):
-    if os.name == "posix":
-      dataPath = os.path.join(os.path.dirname(sys.argv[0]), "../lib/fretsonfire")
-      if not os.path.isdir(dataPath):
-        dataPath = "data"
+    # Determine whether were running from an exe or not
+    if hasattr(sys, "frozen"):
+        if os.name == "posix":
+            dataPath = os.path.join(os.path.dirname(sys.argv[0]), "../lib/fretsonfire")
+            if not os.path.isdir(dataPath):
+                dataPath = "data"
+        else:
+            dataPath = "data"
     else:
-      dataPath = "data"
-  else:
-    dataPath = os.path.join("..", "data")
-  return dataPath
-  
+        dataPath = os.path.join("..", "data")
+    return dataPath
+

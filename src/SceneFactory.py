@@ -28,15 +28,15 @@ import glob
 scenes = ["GameResultsScene", "GuitarScene", "SongChoosingScene"]
 
 def _import(name):
-  globals()[name] = __import__(name)
+    globals()[name] = __import__(name)
 
 def create(engine, name, owner, server = None, session = None, **args):
-  assert session or server
+    assert session or server
 
-  _import(name)
+    _import(name)
 
-  m = globals()[name]
-  if server:
-    return getattr(m, name + "Server")(engine = engine, owner = owner, server = server, **args)
-  else:
-    return getattr(m, name + "Client")(engine = engine, owner = owner, session = session, **args)
+    m = globals()[name]
+    if server:
+        return getattr(m, name + "Server")(engine = engine, owner = owner, server = server, **args)
+    else:
+        return getattr(m, name + "Client")(engine = engine, owner = owner, session = session, **args)

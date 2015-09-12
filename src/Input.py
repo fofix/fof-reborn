@@ -28,233 +28,233 @@ from Task import Task
 from Player import Controls
 
 class KeyListener:
-  def keyPressed(self, key, unicode):
-    pass
-    
-  def keyReleased(self, key):
-    pass
+    def keyPressed(self, key, unicode):
+        pass
+
+    def keyReleased(self, key):
+        pass
 
 class MouseListener:
-  def mouseButtonPressed(self, button, pos):
-    pass
-    
-  def mouseButtonReleased(self, button, pos):
-    pass
-    
-  def mouseMoved(self, pos, rel):
-    pass
-    
+    def mouseButtonPressed(self, button, pos):
+        pass
+
+    def mouseButtonReleased(self, button, pos):
+        pass
+
+    def mouseMoved(self, pos, rel):
+        pass
+
 class SystemEventListener:
-  def screenResized(self, size):
-    pass
-    
-  def restartRequested(self):
-    pass
-    
-  def musicFinished(self):
-    pass
-    
-  def quit(self):
-    pass
+    def screenResized(self, size):
+        pass
+
+    def restartRequested(self):
+        pass
+
+    def musicFinished(self):
+        pass
+
+    def quit(self):
+        pass
 
 MusicFinished = pygame.USEREVENT
 
 try:
-  reversed
+    reversed
 except:
-  def reversed(seq):
-    seq = seq[:]
-    seq.reverse()
-    return seq
+    def reversed(seq):
+        seq = seq[:]
+        seq.reverse()
+        return seq
 
 class Input(Task):
-  def __init__(self):
-    Task.__init__(self)
-    self.mouse                = pygame.mouse
-    self.mouseListeners       = []
-    self.keyListeners         = []
-    self.systemListeners      = []
-    self.priorityKeyListeners = []
-    self.controls             = Controls()
-    self.disableKeyRepeat()
+    def __init__(self):
+        Task.__init__(self)
+        self.mouse                = pygame.mouse
+        self.mouseListeners       = []
+        self.keyListeners         = []
+        self.systemListeners      = []
+        self.priorityKeyListeners = []
+        self.controls             = Controls()
+        self.disableKeyRepeat()
 
-    # Initialize joysticks
-    pygame.joystick.init()
-    self.joystickAxes = {}
-    self.joystickHats = {}
+        # Initialize joysticks
+        pygame.joystick.init()
+        self.joystickAxes = {}
+        self.joystickHats = {}
 
-    self.joysticks = [pygame.joystick.Joystick(id) for id in range(pygame.joystick.get_count())]
-    for j in self.joysticks:
-      j.init()
-      self.joystickAxes[j.get_id()] = [0] * j.get_numaxes() 
-      self.joystickHats[j.get_id()] = [(0, 0)] * j.get_numhats() 
-    Log.debug("%d joysticks found." % (len(self.joysticks)))
+        self.joysticks = [pygame.joystick.Joystick(id) for id in range(pygame.joystick.get_count())]
+        for j in self.joysticks:
+            j.init()
+            self.joystickAxes[j.get_id()] = [0] * j.get_numaxes() 
+            self.joystickHats[j.get_id()] = [(0, 0)] * j.get_numhats() 
+        Log.debug("%d joysticks found." % (len(self.joysticks)))
 
-    # Enable music events
-    Audio.Music.setEndEvent(MusicFinished)
+        # Enable music events
+        Audio.Music.setEndEvent(MusicFinished)
 
-    # Custom key names
-    self.getSystemKeyName = pygame.key.name
-    pygame.key.name       = self.getKeyName
+        # Custom key names
+        self.getSystemKeyName = pygame.key.name
+        pygame.key.name       = self.getKeyName
 
-  def reloadControls(self):
-    self.controls = Controls()
+    def reloadControls(self):
+        self.controls = Controls()
 
-  def disableKeyRepeat(self):
-    pygame.key.set_repeat(0, 0)
+    def disableKeyRepeat(self):
+        pygame.key.set_repeat(0, 0)
 
-  def enableKeyRepeat(self):
-    pygame.key.set_repeat(300, 30)
+    def enableKeyRepeat(self):
+        pygame.key.set_repeat(300, 30)
 
-  def addMouseListener(self, listener):
-    if not listener in self.mouseListeners:
-      self.mouseListeners.append(listener)
+    def addMouseListener(self, listener):
+        if not listener in self.mouseListeners:
+            self.mouseListeners.append(listener)
 
-  def removeMouseListener(self, listener):
-    if listener in self.mouseListeners:
-      self.mouseListeners.remove(listener)
+    def removeMouseListener(self, listener):
+        if listener in self.mouseListeners:
+            self.mouseListeners.remove(listener)
 
-  def addKeyListener(self, listener, priority = False):
-    if priority:
-      if not listener in self.priorityKeyListeners:
-        self.priorityKeyListeners.append(listener)
-    else:
-      if not listener in self.keyListeners:
-        self.keyListeners.append(listener)
+    def addKeyListener(self, listener, priority = False):
+        if priority:
+            if not listener in self.priorityKeyListeners:
+                self.priorityKeyListeners.append(listener)
+        else:
+            if not listener in self.keyListeners:
+                self.keyListeners.append(listener)
 
-  def removeKeyListener(self, listener):
-    if listener in self.keyListeners:
-      self.keyListeners.remove(listener)
-    if listener in self.priorityKeyListeners:
-      self.priorityKeyListeners.remove(listener)
+    def removeKeyListener(self, listener):
+        if listener in self.keyListeners:
+            self.keyListeners.remove(listener)
+        if listener in self.priorityKeyListeners:
+            self.priorityKeyListeners.remove(listener)
 
-  def addSystemEventListener(self, listener):
-    if not listener in self.systemListeners:
-      self.systemListeners.append(listener)
-      
-  def removeSystemEventListener(self, listener):
-    if listener in self.systemListeners:
-      self.systemListeners.remove(listener)
-      
-  def broadcastEvent(self, listeners, function, *args):
-    for l in reversed(listeners):
-      if getattr(l, function)(*args):
-        return True
-    else:
-      return False
-    
-  def broadcastSystemEvent(self, name, *args):
-    return self.broadcastEvent(self.systemListeners, name, *args)
+    def addSystemEventListener(self, listener):
+        if not listener in self.systemListeners:
+            self.systemListeners.append(listener)
 
-  def encodeJoystickButton(self, joystick, button):
-    return 0x10000 + (joystick << 8) + button
+    def removeSystemEventListener(self, listener):
+        if listener in self.systemListeners:
+            self.systemListeners.remove(listener)
 
-  def encodeJoystickAxis(self, joystick, axis, end):
-    return 0x20000 + (joystick << 8) + (axis << 4) + end
-  
-  def encodeJoystickHat(self, joystick, hat, pos):
-    v = int((pos[1] + 1) * 3 + (pos[0] + 1))
-    return 0x30000 + (joystick << 8) + (hat << 4) + v 
-  
-  def decodeJoystickButton(self, id):
-    id -= 0x10000
-    return (id >> 8, id & 0xff)
+    def broadcastEvent(self, listeners, function, *args):
+        for l in reversed(listeners):
+            if getattr(l, function)(*args):
+                return True
+        else:
+            return False
 
-  def decodeJoystickAxis(self, id):
-    id -= 0x20000
-    return (id >> 8, (id >> 4) & 0xf, id & 0xf)
+    def broadcastSystemEvent(self, name, *args):
+        return self.broadcastEvent(self.systemListeners, name, *args)
 
-  def decodeJoystickHat(self, id):
-    id -= 0x30000
-    v = id & 0xf
-    x, y = (v % 3) - 1, (v / 3) - 1
-    return (id >> 8, (id >> 4) & 0xf, (x, y))
+    def encodeJoystickButton(self, joystick, button):
+        return 0x10000 + (joystick << 8) + button
 
-  def getKeyName(self, id):
-    if id >= 0x30000:
-      joy, axis, pos = self.decodeJoystickHat(id)
-      return "Joy #%d, hat %d %s" % (joy + 1, axis, pos)
-    elif id >= 0x20000:
-      joy, axis, end = self.decodeJoystickAxis(id)
-      return "Joy #%d, axis %d %s" % (joy + 1, axis, (end == 1) and "high" or "low")
-    elif id >= 0x10000:
-      joy, but = self.decodeJoystickButton(id)
-      return "Joy #%d, %s" % (joy + 1, chr(ord('A') + but))
-    return self.getSystemKeyName(id)
+    def encodeJoystickAxis(self, joystick, axis, end):
+        return 0x20000 + (joystick << 8) + (axis << 4) + end
 
-  def run(self, ticks):
-    pygame.event.pump()
-    for event in pygame.event.get():
-      if event.type == pygame.KEYDOWN:
-        if not self.broadcastEvent(self.priorityKeyListeners, "keyPressed", event.key, event.unicode):
-          self.broadcastEvent(self.keyListeners, "keyPressed", event.key, event.unicode)
-      elif event.type == pygame.KEYUP:
-        if not self.broadcastEvent(self.priorityKeyListeners, "keyReleased", event.key):
-          self.broadcastEvent(self.keyListeners, "keyReleased", event.key)
-      elif event.type == pygame.MOUSEMOTION:
-        self.broadcastEvent(self.mouseListeners, "mouseMoved", event.pos, event.rel)
-      elif event.type == pygame.MOUSEBUTTONDOWN:
-        self.broadcastEvent(self.mouseListeners, "mouseButtonPressed", event.button, event.pos)
-      elif event.type == pygame.MOUSEBUTTONUP:
-        self.broadcastEvent(self.mouseListeners, "mouseButtonReleased", event.button, event.pos)
-      elif event.type == pygame.VIDEORESIZE:
-        self.broadcastEvent(self.systemListeners, "screenResized", event.size)
-      elif event.type == pygame.QUIT:
-        self.broadcastEvent(self.systemListeners, "quit")
-      elif event.type == MusicFinished:
-        self.broadcastEvent(self.systemListeners, "musicFinished")
-      elif event.type == pygame.JOYBUTTONDOWN: # joystick buttons masquerade as keyboard events
-        id = self.encodeJoystickButton(event.joy, event.button)
-        if not self.broadcastEvent(self.priorityKeyListeners, "keyPressed", id, u'\x00'):
-          self.broadcastEvent(self.keyListeners, "keyPressed", id, u'\x00')
-      elif event.type == pygame.JOYBUTTONUP:
-        id = self.encodeJoystickButton(event.joy, event.button)
-        if not self.broadcastEvent(self.priorityKeyListeners, "keyReleased", id):
-          self.broadcastEvent(self.keyListeners, "keyReleased", id)
-      elif event.type == pygame.JOYAXISMOTION:
-        try:
-          threshold = .8
-          state     = self.joystickAxes[event.joy][event.axis]
-          keyEvent  = None
+    def encodeJoystickHat(self, joystick, hat, pos):
+        v = int((pos[1] + 1) * 3 + (pos[0] + 1))
+        return 0x30000 + (joystick << 8) + (hat << 4) + v 
 
-          if event.value > threshold and state != 1:
-            self.joystickAxes[event.joy][event.axis] = 1
-            keyEvent = "keyPressed"
-            args     = (self.encodeJoystickAxis(event.joy, event.axis, 1), u'\x00')
-            state    = 1
-          elif event.value < -threshold and state != -1:
-            keyEvent = "keyPressed"
-            args     = (self.encodeJoystickAxis(event.joy, event.axis, 0), u'\x00')
-            state    = -1
-          elif state != 0:
-            keyEvent = "keyReleased"
-            args     = (self.encodeJoystickAxis(event.joy, event.axis, (state == 1) and 1 or 0), )
-            state    = 0
+    def decodeJoystickButton(self, id):
+        id -= 0x10000
+        return (id >> 8, id & 0xff)
 
-          if keyEvent:
-            self.joystickAxes[event.joy][event.axis] = state
-            if not self.broadcastEvent(self.priorityKeyListeners, keyEvent, *args):
-              self.broadcastEvent(self.keyListeners, keyEvent, *args)
-        except KeyError:
-          pass
-      elif event.type == pygame.JOYHATMOTION:
-        try:
-          state     = self.joystickHats[event.joy][event.hat]
-          keyEvent  = None
+    def decodeJoystickAxis(self, id):
+        id -= 0x20000
+        return (id >> 8, (id >> 4) & 0xf, id & 0xf)
 
-          if event.value != (0, 0) and state == (0, 0):
-            self.joystickHats[event.joy][event.hat] = event.value
-            keyEvent = "keyPressed"
-            args     = (self.encodeJoystickHat(event.joy, event.hat, event.value), u'\x00')
-            state    = event.value
-          else:
-            keyEvent = "keyReleased"
-            args     = (self.encodeJoystickHat(event.joy, event.hat, state), )
-            state    = (0, 0)
+    def decodeJoystickHat(self, id):
+        id -= 0x30000
+        v = id & 0xf
+        x, y = (v % 3) - 1, (v / 3) - 1
+        return (id >> 8, (id >> 4) & 0xf, (x, y))
 
-          if keyEvent:
-            self.joystickHats[event.joy][event.hat] = state
-            if not self.broadcastEvent(self.priorityKeyListeners, keyEvent, *args):
-              self.broadcastEvent(self.keyListeners, keyEvent, *args)
-        except KeyError:
-          pass
+    def getKeyName(self, id):
+        if id >= 0x30000:
+            joy, axis, pos = self.decodeJoystickHat(id)
+            return "Joy #%d, hat %d %s" % (joy + 1, axis, pos)
+        elif id >= 0x20000:
+            joy, axis, end = self.decodeJoystickAxis(id)
+            return "Joy #%d, axis %d %s" % (joy + 1, axis, (end == 1) and "high" or "low")
+        elif id >= 0x10000:
+            joy, but = self.decodeJoystickButton(id)
+            return "Joy #%d, %s" % (joy + 1, chr(ord('A') + but))
+        return self.getSystemKeyName(id)
+
+    def run(self, ticks):
+        pygame.event.pump()
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if not self.broadcastEvent(self.priorityKeyListeners, "keyPressed", event.key, event.unicode):
+                    self.broadcastEvent(self.keyListeners, "keyPressed", event.key, event.unicode)
+            elif event.type == pygame.KEYUP:
+                if not self.broadcastEvent(self.priorityKeyListeners, "keyReleased", event.key):
+                    self.broadcastEvent(self.keyListeners, "keyReleased", event.key)
+            elif event.type == pygame.MOUSEMOTION:
+                self.broadcastEvent(self.mouseListeners, "mouseMoved", event.pos, event.rel)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self.broadcastEvent(self.mouseListeners, "mouseButtonPressed", event.button, event.pos)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                self.broadcastEvent(self.mouseListeners, "mouseButtonReleased", event.button, event.pos)
+            elif event.type == pygame.VIDEORESIZE:
+                self.broadcastEvent(self.systemListeners, "screenResized", event.size)
+            elif event.type == pygame.QUIT:
+                self.broadcastEvent(self.systemListeners, "quit")
+            elif event.type == MusicFinished:
+                self.broadcastEvent(self.systemListeners, "musicFinished")
+            elif event.type == pygame.JOYBUTTONDOWN: # joystick buttons masquerade as keyboard events
+                id = self.encodeJoystickButton(event.joy, event.button)
+                if not self.broadcastEvent(self.priorityKeyListeners, "keyPressed", id, u'\x00'):
+                    self.broadcastEvent(self.keyListeners, "keyPressed", id, u'\x00')
+            elif event.type == pygame.JOYBUTTONUP:
+                id = self.encodeJoystickButton(event.joy, event.button)
+                if not self.broadcastEvent(self.priorityKeyListeners, "keyReleased", id):
+                    self.broadcastEvent(self.keyListeners, "keyReleased", id)
+            elif event.type == pygame.JOYAXISMOTION:
+                try:
+                    threshold = .8
+                    state     = self.joystickAxes[event.joy][event.axis]
+                    keyEvent  = None
+
+                    if event.value > threshold and state != 1:
+                        self.joystickAxes[event.joy][event.axis] = 1
+                        keyEvent = "keyPressed"
+                        args     = (self.encodeJoystickAxis(event.joy, event.axis, 1), u'\x00')
+                        state    = 1
+                    elif event.value < -threshold and state != -1:
+                        keyEvent = "keyPressed"
+                        args     = (self.encodeJoystickAxis(event.joy, event.axis, 0), u'\x00')
+                        state    = -1
+                    elif state != 0:
+                        keyEvent = "keyReleased"
+                        args     = (self.encodeJoystickAxis(event.joy, event.axis, (state == 1) and 1 or 0), )
+                        state    = 0
+
+                    if keyEvent:
+                        self.joystickAxes[event.joy][event.axis] = state
+                        if not self.broadcastEvent(self.priorityKeyListeners, keyEvent, *args):
+                            self.broadcastEvent(self.keyListeners, keyEvent, *args)
+                except KeyError:
+                    pass
+            elif event.type == pygame.JOYHATMOTION:
+                try:
+                    state     = self.joystickHats[event.joy][event.hat]
+                    keyEvent  = None
+
+                    if event.value != (0, 0) and state == (0, 0):
+                        self.joystickHats[event.joy][event.hat] = event.value
+                        keyEvent = "keyPressed"
+                        args     = (self.encodeJoystickHat(event.joy, event.hat, event.value), u'\x00')
+                        state    = event.value
+                    else:
+                        keyEvent = "keyReleased"
+                        args     = (self.encodeJoystickHat(event.joy, event.hat, state), )
+                        state    = (0, 0)
+
+                    if keyEvent:
+                        self.joystickHats[event.joy][event.hat] = state
+                        if not self.broadcastEvent(self.priorityKeyListeners, keyEvent, *args):
+                            self.broadcastEvent(self.keyListeners, keyEvent, *args)
+                except KeyError:
+                    pass

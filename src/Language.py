@@ -30,27 +30,27 @@ import glob
 Config.define("game", "language", str, "")
 
 def getAvailableLanguages():
-  return [os.path.basename(l).capitalize().replace(".mo", "").replace("_", " ") for l in glob.glob(os.path.join(Version.dataPath(), "translations", "*.mo"))]
+    return [os.path.basename(l).capitalize().replace(".mo", "").replace("_", " ") for l in glob.glob(os.path.join(Version.dataPath(), "translations", "*.mo"))]
 
 def dummyTranslator(string):
-  return string
+    return string
 
 language = Config.load(Version.appName() + ".ini").get("game", "language")
 _ = dummyTranslator
 
 if language:
-  try:
-    trFile = os.path.join(Version.dataPath(), "translations", "%s.mo" % language.lower().replace(" ", "_"))
-    catalog = gettext.GNUTranslations(open(trFile, "rb"))
-    def translate(m):
-      return catalog.gettext(m).decode("utf-8")
-    _ = translate
-  except Exception, x:
-    Log.warn("Unable to select language '%s': %s" % (language, x))
-    language = None
+    try:
+        trFile = os.path.join(Version.dataPath(), "translations", "%s.mo" % language.lower().replace(" ", "_"))
+        catalog = gettext.GNUTranslations(open(trFile, "rb"))
+        def translate(m):
+            return catalog.gettext(m).decode("utf-8")
+        _ = translate
+    except Exception, x:
+        Log.warn("Unable to select language '%s': %s" % (language, x))
+        language = None
 
 # Define the config key again now that we have some options for it
 langOptions = {"": "English"}
 for lang in getAvailableLanguages():
-  langOptions[lang] = _(lang)
+    langOptions[lang] = _(lang)
 Config.define("game", "language", str, "", _("Language"), langOptions)
