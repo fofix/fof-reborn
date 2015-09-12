@@ -22,7 +22,7 @@
 
 from Font import Font
 from Texture import Texture
-from Svg import SvgDrawing, SvgContext
+from Svg import ImgDrawing
 from Texture import Texture
 from Audio import Sound
 from Language import _
@@ -40,20 +40,20 @@ BALL2 = unicode('\x15')
 
 class Data(object):
     """A collection of globally used data resources such as fonts and sound effects."""
-    def __init__(self, resource, svg):
+    def __init__(self, resource, img):
         self.resource = resource
-        self.svg      = svg
+        self.img      = img
 
         # load font customization images
-        self.loadSvgDrawing(self, "star1",   "star1.svg", textureSize = (128, 128))
-        self.loadSvgDrawing(self, "star2",   "star2.svg", textureSize = (128, 128))
-        self.loadSvgDrawing(self, "left",    "left.svg",  textureSize = (128, 128))
-        self.loadSvgDrawing(self, "right",   "right.svg", textureSize = (128, 128))
-        self.loadSvgDrawing(self, "ball1",   "ball1.svg", textureSize = (128, 128))
-        self.loadSvgDrawing(self, "ball2",   "ball2.svg", textureSize = (128, 128))
+        self.loadImgDrawing(self, "star1",   "star1.png", textureSize = (128, 128))
+        self.loadImgDrawing(self, "star2",   "star2.png", textureSize = (128, 128))
+        self.loadImgDrawing(self, "left",    "left.png",  textureSize = (128, 128))
+        self.loadImgDrawing(self, "right",   "right.png", textureSize = (128, 128))
+        self.loadImgDrawing(self, "ball1",   "ball1.png", textureSize = (128, 128))
+        self.loadImgDrawing(self, "ball2",   "ball2.png", textureSize = (128, 128))
 
         # load misc images
-        self.loadSvgDrawing(self, "loadingImage", "loading.svg", textureSize = (256, 256))
+        self.loadImgDrawing(self, "loadingImage", "loading.png", textureSize = (256, 256))
 
         # load all the data in parallel
         asciiOnly = not bool(Language.language)
@@ -91,19 +91,19 @@ class Data(object):
     def loadScrewUpSounds(self):
         return [Sound(self.resource.fileName("fiba%d.ogg" % i)) for i in range(1, 7)]
 
-    def loadSvgDrawing(self, target, name, fileName, textureSize = None):
+    def loadImgDrawing(self, target, name, fileName, textureSize = None):
         """
-        Load an SVG drawing synchronously.
+        Load an image drawing synchronously.
 
         @param target:      An object that will own the drawing
         @param name:        The name of the attribute the drawing will be assigned to
         @param fileName:    The name of the file in the data directory
         @param textureSize  Either None or (x, y), in which case the file will
                             be rendered to an x by y texture
-        @return:            L{SvgDrawing} instance
+        @return:            L{ImgDrawing} instance
         """
         fileName = self.resource.fileName(fileName)
-        drawing  = self.resource.load(target, name, lambda: SvgDrawing(self.svg, fileName), synch = True)
+        drawing  = self.resource.load(target, name, lambda: ImgDrawing(self.img, fileName), synch = True)
         if textureSize:
             drawing.convertToTexture(textureSize[0], textureSize[1])
         return drawing

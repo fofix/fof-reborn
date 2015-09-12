@@ -56,7 +56,7 @@ class Editor(Layer, KeyListener):
         self.newNotes    = None
         self.newNotePos  = 0.0
         self.song        = None
-        self.engine.loadSvgDrawing(self, "background", "editor.svg")
+        self.engine.loadImgDrawing(self, "background", "editor.png")
         self.modified    = False
         self.songName    = songName
         self.libraryName = libraryName

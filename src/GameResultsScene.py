@@ -62,7 +62,7 @@ class GameResultsSceneClient(GameResultsScene, SceneClient):
         self.menu = Menu(self.engine, items, onCancel = self.quit, pos = (.2, .5))
 
         self.engine.resource.load(self, "song", lambda: Song.loadSong(self.engine, songName, library = self.libraryName, notesOnly = True), onLoad = self.songLoaded)
-        self.engine.loadSvgDrawing(self, "background", "keyboard.svg")
+        self.engine.loadImgDrawing(self, "background", "keyboard.png")
         Dialogs.showLoadingScreen(self.engine, lambda: self.song, text = _("Chilling..."))
 
     def keyPressed(self, key, unicode):

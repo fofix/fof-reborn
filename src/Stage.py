@@ -35,7 +35,7 @@ class Layer(object):
         Constructor.
 
         @param stage:     Containing Stage
-        @param drawing:   SvgDrawing for this layer. Make sure this drawing is rendered to
+        @param drawing:   ImgDrawing for this layer. Make sure this drawing is rendered to
                           a texture for performance reasons.
         """
         self.stage       = stage
@@ -249,7 +249,7 @@ class Stage(object):
                 try:
                     drawing = self.textures[texture]
                 except KeyError:
-                    drawing = self.engine.loadSvgDrawing(self, None, texture, textureSize = (xres, yres))
+                    drawing = self.engine.loadImgDrawing(self, None, texture, textureSize = (xres, yres))
                     self.textures[texture] = drawing
 
                 layer = Layer(self, drawing)

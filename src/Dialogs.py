@@ -360,7 +360,7 @@ class SongChooser(Layer, KeyListener):
         self.engine.resource.load(self, "libraryMesh",  lambda: Mesh(self.engine.resource.fileName("library.dae")), synch = True)
         self.engine.resource.load(self, "libraryLabel", lambda: Mesh(self.engine.resource.fileName("library_label.dae")), synch = True)
 
-        self.engine.loadSvgDrawing(self, "background", "cassette.svg")
+        self.engine.loadImgDrawing(self, "background", "cassette.png")
 
     def loadCollection(self):
         self.loaded = False
@@ -886,7 +886,7 @@ class FileChooser(BackgroundLayer, KeyListener):
         self.time           = 0.0
         self.menu           = None
 
-        self.engine.loadSvgDrawing(self, "background", "editor.svg")
+        self.engine.loadImgDrawing(self, "background", "editor.png")
 
     def _getFileCallback(self, fileName):
         return lambda: self.chooseFile(fileName)
@@ -986,7 +986,7 @@ class ItemChooser(BackgroundLayer, KeyListener):
         self.menu = Menu(self.engine, choices = [(c, self._callbackForItem(c)) for c in items], onClose = self.close, onCancel = self.cancel)
         if selected and selected in items:
             self.menu.selectItem(items.index(selected))
-        self.engine.loadSvgDrawing(self, "background", "editor.svg")
+        self.engine.loadImgDrawing(self, "background", "editor.png")
 
     def _callbackForItem(self, item):
         def cb():

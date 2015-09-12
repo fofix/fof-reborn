@@ -73,7 +73,7 @@ class Picture(Element):
     def __init__(self, engine, fileName, height):
         self.height = height
         self.engine = engine
-        engine.loadSvgDrawing(self, "drawing", fileName)
+        engine.loadImgDrawing(self, "drawing", fileName)
 
     def getHeight(self):
         return self.height
@@ -93,9 +93,9 @@ class Credits(Layer, KeyListener):
         self.offset      = 1.0
         self.songLoader  = self.engine.resource.load(self, "song", lambda: Song.loadSong(self.engine, "defy", playbackOnly = True),
                                                      onLoad = self.songLoaded)
-        self.engine.loadSvgDrawing(self, "background1", "editor.svg")
-        self.engine.loadSvgDrawing(self, "background2", "keyboard.svg")
-        self.engine.loadSvgDrawing(self, "background3", "cassette.svg")
+        self.engine.loadImgDrawing(self, "background1", "editor.png")
+        self.engine.loadImgDrawing(self, "background2", "keyboard.png")
+        self.engine.loadImgDrawing(self, "background3", "cassette.png")
         self.engine.boostBackgroundThreads(True)
 
         nf = self.engine.data.font
@@ -111,7 +111,7 @@ class Credits(Layer, KeyListener):
             Text(nf, ns, c2, "center", _("Unreal Voodoo")),
             Text(nf, ns, c1, "center", _("presents")),
             Text(nf, bs, c2, "center", " "),
-            Picture(self.engine, "logo.svg", .25),
+            Picture(self.engine, "logo.png", .25),
             Text(nf, bs, c2, "center", " "),
             Text(nf, bs, c2, "center", _("Version %s") % Version.version()),
             space,

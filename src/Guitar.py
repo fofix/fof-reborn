@@ -58,11 +58,11 @@ class Guitar:
 
         engine.resource.load(self,  "noteMesh", lambda: Mesh(engine.resource.fileName("note.dae")))
         engine.resource.load(self,  "keyMesh",  lambda: Mesh(engine.resource.fileName("key.dae")))
-        engine.loadSvgDrawing(self, "glowDrawing", "glow.png")
-        engine.loadSvgDrawing(self, "neckDrawing", "neck.png")
-        engine.loadSvgDrawing(self, "stringDrawing", "string.png")
-        engine.loadSvgDrawing(self, "barDrawing", "bar.png")
-        engine.loadSvgDrawing(self, "noteDrawing", "note.png")
+        engine.loadImgDrawing(self, "glowDrawing", "glow.png")
+        engine.loadImgDrawing(self, "neckDrawing", "neck.png")
+        engine.loadImgDrawing(self, "stringDrawing", "string.png")
+        engine.loadImgDrawing(self, "barDrawing", "bar.png")
+        engine.loadImgDrawing(self, "noteDrawing", "note.png")
 
     def selectPreviousString(self):
         self.selectedString = (self.selectedString - 1) % self.strings

@@ -189,7 +189,6 @@ src/Data.py
 src/Debug.py
 src/DialogTest.py
 src/Dialogs.py
-src/DummyAmanith.py
 src/Editor.py
 src/Engine.py
 src/EngineTest.py

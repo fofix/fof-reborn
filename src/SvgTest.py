@@ -27,11 +27,11 @@ from Texture import Texture
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-class SvgTest(unittest.TestCase):
+class ImgTest(unittest.TestCase):
     def testRendering(self):
-        self.svg.transform.translate(256, 256)
-        self.svg.transform.rotate(3.141592)
-        self.svg.draw()
+        self.img.transform.translate(256, 256)
+        self.img.transform.rotate(3.141592)
+        self.img.draw()
         self.e.video.flip()
 
     def testRenderToTexture(self):
@@ -39,15 +39,15 @@ class SvgTest(unittest.TestCase):
         fullwidth, fullheight = 512, 512
         width, height = int(fullwidth / scale), int(fullheight / scale)
         t = Texture()
-        self.e.svg.setProjection((0, 0, fullwidth, fullheight))
+        self.e.img.setProjection((0, 0, fullwidth, fullheight))
 
         t.prepareRenderTarget(width, height)
         t.setAsRenderTarget()
         glViewport(0, 0, width, height)
         glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        self.svg.transform.translate(width * scale / 2, height * scale / 2)
-        self.svg.transform.rotate(3.141592)
-        self.svg.draw()
+        self.img.transform.translate(width * scale / 2, height * scale / 2)
+        self.img.transform.rotate(3.141592)
+        self.img.draw()
         t.resetDefaultRenderTarget()
 
         glViewport(0, 0, fullwidth, fullheight)
@@ -82,9 +82,9 @@ class SvgTest(unittest.TestCase):
 
     def setUp(self):
         self.e = GameEngine()
-        self.e.loadSvgDrawing(self, "svg", "koopa.svg")
+        self.e.loadImgDrawing(self, "img", "koopa.png")
 
-        while not self.svg:
+        while not self.img:
             self.e.run()
 
         glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)

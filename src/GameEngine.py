@@ -34,7 +34,7 @@ from Resource import Resource
 from Data import Data
 from Server import Server
 from Session import ClientSession
-from Svg import SvgContext, SvgDrawing, LOW_QUALITY, NORMAL_QUALITY, HIGH_QUALITY
+from Svg import ImgContext, ImgDrawing
 from Debug import DebugLayer
 from Language import _
 import Network
@@ -59,7 +59,6 @@ Config.define("video",  "fullscreen",   bool,  False, text = _("Fullscreen Mode"
 Config.define("video",  "multisamples", int,   4,     text = _("Antialiasing Quality"), options = {0: _("None"), 2: _("2x"), 4: _("4x"), 6: _("6x"), 8: _("8x")})
 Config.define("video",  "resolution",   str,   "640x480")
 Config.define("video",  "fps",          int,   80,    text = _("Frames per Second"), options = dict([(n, n) for n in range(1, 120)]))
-#Config.define("opengl", "svgquality",   int,   NORMAL_QUALITY,  text = _("SVG Quality"), options = {LOW_QUALITY: _("Low"), NORMAL_QUALITY: _("Normal"), HIGH_QUALITY: _("High")})
 Config.define("audio",  "frequency",    int,   44100, text = _("Sample Frequency"), options = [8000, 11025, 22050, 32000, 44100, 48000])
 Config.define("audio",  "bits",         int,   16,    text = _("Sample Bits"), options = [16, 8])
 Config.define("audio",  "stereo",       bool,  True)
@@ -166,8 +165,7 @@ class GameEngine(Engine):
         h = viewport[3] - viewport[1]
         w = viewport[2] - viewport[0]
         geometry = (0, 0, w, h)
-        self.svg = SvgContext(geometry)
-        self.svg.setRenderingQuality(self.config.get("opengl", "svgquality"))
+        self.img = ImgContext(geometry)
         glViewport(int(viewport[0]), int(viewport[1]), int(viewport[2]), int(viewport[3]))
 
         self.input     = Input()
@@ -192,7 +190,7 @@ class GameEngine(Engine):
         self.addTask(self.input, synchronized = False)
         self.addTask(self.view)
         self.addTask(self.resource, synchronized = False)
-        self.data = Data(self.resource, self.svg)
+        self.data = Data(self.resource, self.img)
 
         self.input.addKeyListener(FullScreenSwitcher(self), priority = True)
         self.input.addSystemEventListener(SystemEventHandler(self))
@@ -262,7 +260,7 @@ class GameEngine(Engine):
         @param height:  New height in pixels
         """
         self.view.setGeometry((0, 0, width, height))
-        self.svg.setGeometry((0, 0, width, height))
+        self.img.setGeometry((0, 0, width, height))
 
     def isServerRunning(self):
         return bool(self.server)
@@ -306,7 +304,7 @@ class GameEngine(Engine):
             self.removeTask(session)
             self.sessions.remove(session)
 
-    def loadSvgDrawing(self, target, name, fileName, textureSize = None):
+    def loadImgDrawing(self, target, name, fileName, textureSize = None):
         """
         Load an SVG drawing synchronously.
 
@@ -315,9 +313,9 @@ class GameEngine(Engine):
         @param fileName:    The name of the file in the data directory
         @param textureSize  Either None or (x, y), in which case the file will
                             be rendered to an x by y texture
-        @return:            L{SvgDrawing} instance
+        @return:            L{ImgDrawing} instance
         """
-        return self.data.loadSvgDrawing(target, name, fileName, textureSize)
+        return self.data.loadImgDrawing(target, name, fileName, textureSize)
 
     def loading(self):
         """Loading state loop."""
@@ -336,7 +334,7 @@ class GameEngine(Engine):
         return done
 
     def clearScreen(self):
-        self.svg.clear(*Theme.backgroundColor)
+        self.img.clear(*Theme.backgroundColor)
 
     def main(self):
         """Main state loop."""

@@ -29,7 +29,6 @@ from Menu import Menu
 from Editor import Editor, Importer, GHImporter
 from Credits import Credits
 from Lobby import Lobby
-from Svg import SvgDrawing
 from Language import _
 import Dialogs
 import Config
@@ -44,9 +43,9 @@ class MainMenu(BackgroundLayer):
         self.visibility          = 0.0
         self.songName            = songName
 
-        self.engine.loadSvgDrawing(self, "background", "keyboard.svg")
-        self.engine.loadSvgDrawing(self, "guy",        "pose.svg")
-        self.engine.loadSvgDrawing(self, "logo",       "logo.svg")
+        self.engine.loadImgDrawing(self, "background", "keyboard.png")
+        self.engine.loadImgDrawing(self, "guy",        "pose.png")
+        self.engine.loadImgDrawing(self, "logo",       "logo.png")
         self.song = Audio.Sound(self.engine.resource.fileName("menu.ogg"))
         self.song.setVolume(self.engine.config.get("audio", "songvol"))
         self.song.play(-1)

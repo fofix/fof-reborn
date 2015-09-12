@@ -74,9 +74,9 @@ class GuitarSceneClient(GuitarScene, SceneClient):
 
         self.stage            = Stage.Stage(self, self.engine.resource.fileName("stage.ini"))
 
-        self.engine.loadSvgDrawing(self, "fx2x",   "2x.svg", textureSize = (256, 256))
-        self.engine.loadSvgDrawing(self, "fx3x",   "3x.svg", textureSize = (256, 256))
-        self.engine.loadSvgDrawing(self, "fx4x",   "4x.svg", textureSize = (256, 256))
+        self.engine.loadImgDrawing(self, "fx2x",   "2x.png", textureSize = (256, 256))
+        self.engine.loadImgDrawing(self, "fx3x",   "3x.png", textureSize = (256, 256))
+        self.engine.loadImgDrawing(self, "fx4x",   "4x.png", textureSize = (256, 256))
 
         Dialogs.showLoadingScreen(self.engine, lambda: self.song, text = _("Tuning Guitar..."))
 
@@ -491,7 +491,7 @@ class GuitarSceneClient(GuitarScene, SceneClient):
                         try:
                             picture = event.picture
                         except:
-                            self.engine.loadSvgDrawing(event, "picture", os.path.join(self.libraryName, self.songName, event.fileName))
+                            self.engine.loadImgDrawing(event, "picture", os.path.join(self.libraryName, self.songName, event.fileName))
                             picture = event.picture
 
                         w, h, = self.engine.view.geometry[2:4]

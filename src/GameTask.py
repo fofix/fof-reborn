@@ -25,7 +25,6 @@ from Session import MessageHandler
 from Task import Task
 from Language import _
 import MainMenu
-import Svg
 import Dialogs
 
 class GameTask(Task, KeyListener, MessageHandler):
