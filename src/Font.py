@@ -186,7 +186,7 @@ class Font:
         glDisable(GL_TEXTURE_2D)
 
     def _allocateGlyphTexture(self):
-        t = TextureAtlas(size = glGetInteger(GL_MAX_TEXTURE_SIZE))
+        t = TextureAtlas(size = (glGetInteger(GL_MAX_TEXTURE_SIZE) / 2))
         t.texture.setFilter(GL_LINEAR, GL_LINEAR)
         t.texture.setRepeat(GL_CLAMP, GL_CLAMP)
         self.glyphTextures.append(t)
