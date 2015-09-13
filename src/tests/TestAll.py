@@ -26,6 +26,10 @@
 import sys
 import os
 import unittest
+
+# add the main src directory to sys.path to allow the tests to run.
+sys.path.append(os.path.abspath('..'))
+
 import Config
 
 tests = []

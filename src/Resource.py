@@ -90,7 +90,7 @@ class Loader(Thread):
         return self.result
 
 class Resource(Task):
-    def __init__(self, dataPath = os.path.join("..", "data")):
+    def __init__(self, dataPath = Version.dataPath()):
         self.resultQueue = Queue()
         self.dataPaths = [dataPath]
         self.loaderSemaphore = BoundedSemaphore(value = 1)
