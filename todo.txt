@@ -120,5 +120,6 @@ New Todo:
  - Replace pygame with pysdl2
    - Font rendering will be the most difficult part of this transition.
  - Port over the fofix mixstream code to be used as the Audio streaming code.
+ - If we want to diverge from the original code a bit more I might drop the collada format in favor of the .obj format.
 
 
