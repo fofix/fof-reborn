@@ -41,18 +41,14 @@ def run_command(command):
 
     return data
 
-pisSet = None
 # This prevents the following message being displayed on osx:
 # ApplePersistenceIgnoreState: Existing state will not be touched. New state will be written to *path*
 if 'Darwin' in platform.platform():
     data = run_command('defaults read org.python.python ApplePersistenceIgnoreState')
-
+    
     if data in ['1', 'ON']:
         run_command('defaults write org.python.python ApplePersistenceIgnoreState 0')
         atexit.register(run_command, 'defaults write org.python.python ApplePersistenceIgnoreState %s' % data)
-        apisSet = True
-    else:
-        apisSet = False
 
 # This trickery is needed to get OpenGL 3.x working with py2exe
 if hasattr(sys, "frozen") and os.name == "nt":
