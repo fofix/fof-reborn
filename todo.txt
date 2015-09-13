@@ -119,5 +119,6 @@ New Todo:
  - Move the game to using Modern style classes.
  - Replace pygame with pysdl2
    - Font rendering will be the most difficult part of this transition.
+ - Port over the fofix mixstream code to be used as the Audio streaming code.
 
 
