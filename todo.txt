@@ -83,7 +83,7 @@ Release in 1.2.512:
  - fix importing two missing songs on GH1 and GH2 disks (FIXED 345)
  - tapping support, aka hammer-ons and pull-ofs (FIXED 409)
 
-Todo:
+Old Todo:
 
  - better documentation for the source
  - add custom fretboard and background support
@@ -105,4 +105,19 @@ Todo:
  - experimental pyglet audio support
  - TODO: fix py2exe restarting
  - TODO: fix lightgraphics mod
+
+New Todo:
+ - Expand test suite
+ - Fix or remove broken unittests:
+   - ServerTest - (Code is commented out and way out of date)
+   - MenuTest - (It doesn't actually really let the menu render or it test it at all)
+   - SceneTest - (Not implemented, is mainly blank)
+   - EngineTest - All commented out
+ - Move source code into a package
+ - Rewrite setup.py and packaging code.
+ 	- Currently generated app bundles on osx are broken.
+ - Move the game to using Modern style classes.
+ - Replace pygame with pysdl2
+   - Font rendering will be the most difficult part of this transition.
+
 
