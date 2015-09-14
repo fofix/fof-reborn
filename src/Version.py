@@ -35,6 +35,7 @@ def version():
 
 def dataPath():
     # Determine whether were running from an exe or not
+
     if hasattr(sys, "frozen"):
         if os.name == "posix":
             dataPath = os.path.join(os.path.dirname(sys.argv[0]), "../lib/fretsonfire")
@@ -43,6 +44,14 @@ def dataPath():
         else:
             dataPath = "data"
     else:
-        dataPath = os.path.join("..", "data")
+        # recurse up until we find the data directory
+        pathTimes = []
+        while True:
+            path = os.path.abspath(os.path.join(*(pathTimes+['data'])))
+            if os.path.exists(path):
+                dataPath = path
+                break
+            else:
+                pathTimes.append('..')
     return dataPath
 

@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------
-# Illusoft Collada 1.4 plugin for Blender version 0.3.89
+# Illusoft Collada 1.4 plugin for Blender version 0.3.159
 # --------------------------------------------------------------------------
 # ***** BEGIN GPL LICENSE BLOCK *****
 #
@@ -12,7 +12,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
@@ -84,7 +84,7 @@ def ToFloatList(var):
     if type(var) == list:
         for i in var:
             result.append(float(i))
-    else:	 
+    else:
         split = var.split( )
         for i in split:
             result.append(float(i))
@@ -98,7 +98,7 @@ def ToIntList(lst):
         for i in lst:
             result.append(int(i))
     else:
-        split = lst.split( )		
+        split = lst.split( )
         for i in split:
             result.append(int(i))
     return result
@@ -126,12 +126,20 @@ def AddVec3( vector1, vector2 ):
     vector1.z += vector2.z
 
 def ToMatrix4( matrixElement ):
-    data = matrixElement.split( )
+    if matrixElement is None:
+        return None
+    if not isinstance(matrixElement,list):
+        data = matrixElement.split( )
 
-    vec1 = [ float(data[0]), float(data[4]), float(data[8]), float(data[12]) ]
-    vec2 = [ float(data[1]), float(data[5]), float(data[9]), float(data[13]) ]
-    vec3 = [ float(data[2]), float(data[6]), float(data[10]), float(data[14]) ]
-    vec4 = [ float(data[3]), float(data[7]), float(data[11]), float(data[15]) ]
+        vec1 = [ float(data[0]), float(data[4]), float(data[8]), float(data[12]) ]
+        vec2 = [ float(data[1]), float(data[5]), float(data[9]), float(data[13]) ]
+        vec3 = [ float(data[2]), float(data[6]), float(data[10]), float(data[14]) ]
+        vec4 = [ float(data[3]), float(data[7]), float(data[11]), float(data[15]) ]
+    else:
+        vec1 = matrixElement[0:4]
+        vec2 = matrixElement[4:8]
+        vec3 = matrixElement[8:12]
+        vec4 =  matrixElement[12:16]
 
     return [ vec1, vec2, vec3, vec4 ]
 
@@ -174,11 +182,14 @@ def MatrixToString(mat, nDigits):
 def RoundList(lst, nDigits):
     result = []
     for i in lst:
+        val = round(i, nDigits)
+        if val < (1.0 / 10**nDigits):
+            val = 0
         result.append(round(i, nDigits))
     return result
 
 
-def ListToString(lst):
+def ListToString(lst, nDigits = 5):
     val  = ''
     if lst is None:
         return val
@@ -186,6 +197,9 @@ def ListToString(lst):
         for i in lst:
             if type(i) == list:
                 val += ListToString(i)+'\n'
+            elif isinstance(i, float):
+                f = '%.'+str(nDigits)+'f '
+                val += f % i
             else:
                 val += str(i)+' '
         return val[:-1]
@@ -195,43 +209,43 @@ def ListToString(lst):
 # Returns the first child of the specified type in node
 def FindElementByTagName(parentNode, type):
     child = parentNode.firstChild
-    while child != None:
+    while child is not None:
         if child.localName == type:
             return child
         child = child.nextSibling
-##	  childs = parentNode.getElementsByTagName(type)
-##	  if len(childs) > 0:
-##		  return childs[0]
+##        childs = parentNode.getElementsByTagName(type)
+##        if len(childs) > 0:
+##                return childs[0]
     return None
 
 def FindElementsByTagName(parentNode, type):
     result = []
     child = parentNode.firstChild
-    while child != None:
+    while child is not None:
         if child.localName == type:
             result.append(child)
         child = child.nextSibling
     return result
 
 def ReadAttribute(node,attributeName):
-    if node != None and attributeName != None:
+    if node is not None and attributeName is not None:
         attribute = node.getAttribute(attributeName)
-        return attribute		
+        return attribute
     return None
 
 def ReadContents(node):
-    if node != None:
+    if node is not None:
         child = node.firstChild
-        if child != None and child.nodeType == child.TEXT_NODE:
+        if child is not None and child.nodeType == child.TEXT_NODE:
             return child.nodeValue
     return None
 
 def ReadDateTime(node):
-    if node == None:
+    if node is None:
         return None
     return GetDateTime(ReadContents(node))
 
-def RemoveWhiteSpace(parent):	 
+def RemoveWhiteSpace(parent):
     for child in list(parent.childNodes):
         if child.nodeType==child.TEXT_NODE and child.data.strip()=='':
             parent.removeChild(child)
@@ -245,38 +259,36 @@ def RemoveWhiteSpaceNode(parent):
     return parent
 
 ##def RemoveWhiteSpace(node):
-##	  removeList = []
-##	  for child in node.childNodes:
-##		  if child.nodeType == child.TEXT_NODE and not child.data.strip():
-##			  removeList.append(child)
-##		  elif child.hasChildNodes():
-##			  RemoveWhiteSpace(child)
-##	  
-##	  for node in removeList:
-##		  node.parentNode.removeChild(node)
+##        removeList = []
+##        for child in node.childNodes:
+##                if child.nodeType == child.TEXT_NODE and not child.data.strip():
+##                        removeList.append(child)
+##                elif child.hasChildNodes():
+##                        RemoveWhiteSpace(child)
+##
+##        for node in removeList:
+##                node.parentNode.removeChild(node)
 
 def GetDateTime(xmlvalue):
-    return xmlvalue
-    #vals = xmlvalue.split('T')
-    #datestr = vals[0]
-    #timestr =  vals[1]
-    #date = datestr.split('-')
-    #time = timestr.split(':')
-    #time[2]=time[2].rstrip('Z')    
-    #return datetime(int(date[0]), int(date[1]), int(date[2]),int(time[0]), int(time[1]), int(float(time[2])))
+    vals = xmlvalue.split('T')
+    datestr = vals[0]
+    timestr =  vals[1]
+    date = datestr.split('-')
+    time = timestr.split(':')
+    time[2]=time[2].rstrip('Z')
+    return datetime(int(date[0]), int(date[1]), int(date[2]),int(time[0]), int(time[1]), int(float(time[2])))
 
 def ToDateTime(val):
-    return val
-    #return '%s-%s-%sT%s:%s:%sZ'%(val.year,str(val.month).zfill(2),str(val.day).zfill(2), str(val.hour).zfill(2), str(val.minute).zfill(2),str(val.second).zfill(2))
+    return '%s-%s-%sT%s:%s:%sZ'%(val.year,str(val.month).zfill(2),str(val.day).zfill(2), str(val.hour).zfill(2), str(val.minute).zfill(2),str(val.second).zfill(2))
 
 def GetStringArrayFromNodes(xmlNodes):
     vals = []
-    if xmlNodes == None:
+    if xmlNodes is None:
         return vals
     for xmlNode in xmlNodes:
         stringvals = ReadContents(xmlNode).split( )
         for string in stringvals:
-            vals.append(string) 		   
+            vals.append(string)
     return vals
 
 def GetListFromNodes(xmlNodes, cast=None):
@@ -293,7 +305,7 @@ def GetListFromNodes(xmlNodes, cast=None):
         elif cast == bool:
             val = ToBoolList(val)
         result.append(val)
-    return result			 
+    return result
 
 
 def ToXml(xmlNode, indent='\t', newl='\n'):
@@ -304,14 +316,14 @@ def __ToXml(xmlNode, indent='\t',newl='\n',totalIndent=''):
     if len(childs) > 0:
         attrs = ''
         attributes = xmlNode.attributes
-        if attributes != None:
+        if attributes is not None:
             for attr in attributes.keys():
                 val = attributes[attr].nodeValue
                 attrs += ' %s="%s"'%(attr,val)
         result = '%s<%s%s>'%(totalIndent,xmlNode.localName,attrs)
         tempnewl = newl
         tempTotIndent = totalIndent
-        for child in childs:			
+        for child in childs:
             if child.nodeType == child.TEXT_NODE:
                 tempnewl = ''
                 tempTotIndent = ''
@@ -336,7 +348,7 @@ def AppendChilds(xmlNode, syntax, lst):
         el.appendChild(text)
         xmlNode.appendChild(el)
 
-    return xmlNode		
+    return xmlNode
 
 # TODO: Collada API: finish DaeDocument
 class DaeDocument(object):
@@ -366,8 +378,8 @@ class DaeDocument(object):
         self.visualScenesLibrary = DaeLibrary(DaeSyntax.LIBRARY_VISUAL_SCENES,DaeVisualScene,DaeSyntax.VISUAL_SCENE)
 
         # Physics Support
-        self.physicsMaterialsLibrary = DaeLibrary(DaeSyntax.LIBRARY_PHYSICS_MATERIALS, DaePhysicsMaterial, DaePhysicsSyntax.PHYSICS_MATERIAL)		 
-        self.physicsScenesLibrary = DaeLibrary(DaeSyntax.LIBRARY_PHYSICS_SCENES, DaePhysicsScene, DaePhysicsSyntax.PHYSICS_SCENE)		 
+        self.physicsMaterialsLibrary = DaeLibrary(DaeSyntax.LIBRARY_PHYSICS_MATERIALS, DaePhysicsMaterial, DaePhysicsSyntax.PHYSICS_MATERIAL)
+        self.physicsScenesLibrary = DaeLibrary(DaeSyntax.LIBRARY_PHYSICS_SCENES, DaePhysicsScene, DaePhysicsSyntax.PHYSICS_SCENE)
 
         self.physicsModelsLibrary = DaeLibrary(DaeSyntax.LIBRARY_PHYSICS_MODELS, DaePhysicsModel, DaePhysicsSyntax.PHYSICS_MODEL)
 
@@ -380,14 +392,14 @@ class DaeDocument(object):
         doc = parse( filename )
 
         # Get COLLADA element
-        colladaNode = doc.documentElement	 
+        colladaNode = doc.documentElement
 
-        # Get Attributes		
+        # Get Attributes
         self.version = colladaNode.getAttribute(DaeSyntax.VERSION)
         #if not IsVersionOk(self.version, self.colladaVersion):
-        #	Debug.Debug('The version of the file (%s) is older then the version supported by this plugin(%s).'%(self.version, self.colladaVersion),'ERROR')
-        #	doc.unlink()
-        #	return 
+        #       Debug.Debug('The version of the file (%s) is older then the version supported by this plugin(%s).'%(self.version, self.colladaVersion),'ERROR')
+        #       doc.unlink()
+        #       return
         self.xmlns = colladaNode.getAttribute(DaeSyntax.XMLNS)
 
         # get the assets element
@@ -418,7 +430,7 @@ class DaeDocument(object):
 
         # Get the scene
         sceneNode = FindElementByTagName(colladaNode, DaeSyntax.SCENE)
-        if sceneNode != None:
+        if sceneNode is not None:
             scene = DaeScene()
             scene.LoadFromXml(self, sceneNode)
             self.scene = scene
@@ -444,15 +456,15 @@ class DaeDocument(object):
         AppendChild(self,colladaNode,self.camerasLibrary)
         AppendChild(self,colladaNode,self.controllersLibrary)
         AppendChild(self,colladaNode,self.effectsLibrary)
-        AppendChild(self,colladaNode,self.geometriesLibrary)
         AppendChild(self,colladaNode,self.imagesLibrary)
         AppendChild(self,colladaNode,self.lightsLibrary)
         AppendChild(self,colladaNode,self.materialsLibrary)
+        AppendChild(self,colladaNode,self.geometriesLibrary)
         AppendChild(self,colladaNode,self.nodesLibrary)
         AppendChild(self,colladaNode,self.visualScenesLibrary)
         AppendChild(self,colladaNode,self.physicsMaterialsLibrary)
         AppendChild(self,colladaNode,self.physicsModelsLibrary)
-        AppendChild(self,colladaNode,self.physicsScenesLibrary) 	   
+        AppendChild(self,colladaNode,self.physicsScenesLibrary)
 
         AppendChild(self,colladaNode,self.scene)
 
@@ -637,20 +649,19 @@ class DaeScene(DaeEntity):
     def LoadFromXml(self, daeDocument, xmlNode):
         if xmlNode is None:
             return
-        self.iVisualScenes = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.INSTANCE_VISUAL_SCENE, DaeVisualSceneInstance)
         self.iPhysicsScenes = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.INSTANCE_PHYSICS_SCENE, DaePhysicsSceneInstance)
+        self.iVisualScene = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.INSTANCE_VISUAL_SCENE, DaeVisualSceneInstance)
 
     def SaveToXml(self, daeDocument):
         node = super(DaeScene,self).SaveToXml(daeDocument)
-        AppendChilds(daeDocument, node, self.iVisualScenes)
         AppendChilds(daeDocument, node, self.iPhysicsScenes)
+        AppendChilds(daeDocument, node, self.iVisualScenes)
         return node
 
-    def GetVisualScenes(self):
-        result = []
-        for i in self.iVisualScenes:
-            result.append(i.object)
-        return result
+    def GetVisualScene(self):
+        if self.iVisualScene is not None:
+            return self.iVisualScene.object
+        return None
 
     def GetPhysicsScenes(self):
         result = []
@@ -714,7 +725,8 @@ class DaeContributor(DaeEntity):
         AppendTextChild(node, DaeSyntax.AUTHORING_TOOL, self.authoringTool)
         AppendTextChild(node, DaeSyntax.COMMENTS, self.comments)
         AppendTextChild(node, DaeSyntax.COPYRIGHT, self.copyright)
-        AppendTextChild(node, DaeSyntax.SOURCE_DATA, self.sourceData)
+        sourceDataEncoded = self.sourceData.replace(" ","%20")
+        AppendTextChild(node, DaeSyntax.SOURCE_DATA, sourceDataEncoded)
         return node
 
 
@@ -778,7 +790,7 @@ class DaeChannel(DaeEntity):
 
     def LoadFromXml(self, daeDocument, xmlNode):
         self.source = ReadAttribute(xmlNode, DaeSyntax.SOURCE)
-        self.target = ReadAttribute(xmlNode, DaeSyntax.TARGET)		
+        self.target = ReadAttribute(xmlNode, DaeSyntax.TARGET)
 
     def SaveToXml(self, daeDocument):
         node = super(DaeChannel, self).SaveToXml(daeDocument)
@@ -821,7 +833,144 @@ class DaeCamera(DaeElement):
         return super(DaeCamera,self).__str__()+'asset: %s, optics: %s, imager: %s, extras: %s'%(self.asset, self.optics, self.imager, self.extras)
 
 class DaeController(DaeElement):
-    pass
+    def __init__(self):
+        super(DaeController, self).__init__()
+        self.skin = None
+        self.morph = None
+        self.extras = []
+        self.asset = None
+        self.syntax = DaeSyntax.CONTROLLER
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        super(DaeController, self).LoadFromXml(daeDocument, xmlNode)
+        self.extras = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.EXTRA, DaeExtra)
+        self.skin = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.SKIN, DaeSkin)
+
+        self.morph = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.MORPH, DaeMorph)
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeController, self).SaveToXml(daeDocument)
+        AppendChild(daeDocument,node,self.morph)
+        AppendChild(daeDocument,node,self.skin)
+        # Add the assets
+        AppendChild(daeDocument,node,self.asset)
+        # Add the extra's
+        AppendChilds(self,node,self.extras)
+        return node
+
+class DaeSkin(DaeEntity):
+    def __init__(self):
+        self.source = ""
+        self.bindShapeMatrix = []
+        self.sources = [] # Three or more
+        self.joints = None
+        self.vertexWeights = None
+        self.extras = []
+        self.syntax = DaeSyntax.SKIN
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        self.source = ReadAttribute(xmlNode, DaeSyntax.SOURCE)[1:]
+        self.bindShapeMatrix = ToMatrix4(ReadContents(FindElementByTagName(xmlNode,DaeSyntax.BIND_SHAPE_MATRIX)))
+        self.sources = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.SOURCE, DaeSource)
+        self.joints = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.JOINTS, DaeJoints)
+        self.vertexWeights = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.VERTEX_WEIGHTS, DaeVertexWeights)
+        self.extras = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.EXTRA, DaeExtra)
+
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeSkin, self).SaveToXml(daeDocument)
+        SetAttribute(node, DaeSyntax.SOURCE, "#" + StripString(self.source))
+        AppendTextChild(node, DaeSyntax.BIND_SHAPE_MATRIX, MatrixToString(self.bindShapeMatrix,ROUND))
+        AppendChilds(daeDocument, node, self.sources)
+        AppendChild(daeDocument,node,self.joints)
+        AppendChild(daeDocument,node,self.vertexWeights)
+
+        # Add the extra's
+        AppendChilds(self,node,self.extras)
+        return node
+
+    def FindSource(self,input):
+        for s in self.sources:
+            if s.id == input.source:
+                return s
+        return None
+
+
+class DaeJoints(DaeEntity):
+    def __init__(self):
+        self.extras = []
+        self.inputs = []
+        self.syntax = DaeSyntax.JOINTS
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        self.extras = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.EXTRA, DaeExtra)
+        self.inputs = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.INPUT, DaeInput)
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeJoints, self).SaveToXml(daeDocument)
+        # Add the inputs
+        AppendChilds(self,node,self.inputs)
+        # Add the extras
+        AppendChilds(self,node,self.extras)
+        return node
+
+    def GetStride(self):
+        if self.inputs != []:
+            return max([i.offset for i in self.inputs])+1
+        else:
+            return 0
+
+    def FindInput(self, semantic):
+        for i in self.inputs:
+            if i.semantic == semantic:
+                return i
+        return None
+
+class DaeVertexWeights(DaeEntity):
+    def __init__(self):
+        self.extras = []
+        self.inputs = []
+        self.count = 0
+        self.v = []
+        self.vcount = []
+        self.syntax = DaeSyntax.VERTEX_WEIGHTS
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        self.extras = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.EXTRA, DaeExtra)
+        self.inputs = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.INPUT, DaeInput)
+        self.count = ReadAttribute(xmlNode, DaeSyntax.COUNT)
+        self.vcount = ToIntList(ReadContents(FindElementByTagName(xmlNode, DaeSyntax.VCOUNT)))
+        self.v = ToIntList(ReadContents(FindElementByTagName(xmlNode, DaeSyntax.V)))
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeVertexWeights, self).SaveToXml(daeDocument)
+        SetAttribute(node, DaeSyntax.COUNT, self.count)
+        # Add the inputs
+        AppendChilds(self,node,self.inputs)
+        AppendTextChild(node, DaeSyntax.VCOUNT, ListToString(self.vcount))
+        AppendTextChild(node, DaeSyntax.V, ListToString(self.v))
+
+        # Add the extras
+        AppendChilds(self,node,self.extras)
+        return node
+
+    def GetStride(self):
+        if self.inputs != []:
+            return max([i.offset for i in self.inputs])+1
+        else:
+            return 0
+
+    def FindInput(self, semantic):
+        for i in self.inputs:
+            if i.semantic == semantic:
+                return i
+        return None
+
+class DaeMorph(DaeEntity):
+    def __init__(self):
+        self.syntax = DaeSyntax.MORPH
+
+
 class DaeImage(DaeElement):
     def __init__(self):
         super(DaeImage,self).__init__()
@@ -838,7 +987,7 @@ class DaeImage(DaeElement):
         self.height = ReadAttribute(xmlNode, DaeSyntax.HEIGHT)
         self.width = ReadAttribute(xmlNode, DaeSyntax.WIDTH)
         self.depth = ReadAttribute(xmlNode, DaeSyntax.DEPTH)
-        self.initFrom = ReadContents(FindElementByTagName(xmlNode, DaeSyntax.INIT_FROM))	
+        self.initFrom = str(ReadContents(FindElementByTagName(xmlNode, DaeSyntax.INIT_FROM)))
 
     def SaveToXml(self, daeDocument):
         node = super(DaeImage, self).SaveToXml(daeDocument)
@@ -850,31 +999,31 @@ class DaeImage(DaeElement):
         return node
 
 ##class DaeMaterial(DaeElement):
-##	  def __init__(self):
-##		  super(DaeMaterial,self).__init__()
-##		  self.asset = None
-##		  self.iEffects = []
-##		  self.extras = None
-##		  self.syntax = DaeSyntax.MATERIAL
-##		  
-##	  def LoadFromXml(self, daeDocument, xmlNode):
-##		  super(DaeMaterial, self).LoadFromXml(daeDocument, xmlNode)
-##		  self.extras = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.EXTRA, DaeExtra)
-##		  self.asset = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.ASSET, DaeAsset)
-##		  self.iEffects = CreateObjectsFromXml(daeDocument,xmlNode, DaeSyntax.INSTANCE_EFFECT, DaeEffectInstance)
-##	  
-##	  def SaveToXml(self, daeDocument):
-##		  node = super(DaeMaterial, self).SaveToXml(daeDocument)
-##		  # Add the assets
-##		  AppendChild(daeDocument,node,self.asset)
-##		  # Add the effect instances
-##		  AppendChilds(daeDocument, node, self.iEffects)
-##		  # Add the extra's
-##		  AppendChilds(self,node,self.extras)
-##		  return node
-##		  
-##	  def __str__(self):
-##		  return super(DaeLight,self).__str__()+' assets: %s, data: %s, extras: %s'%(self.asset, self.data, self.extras)
+##        def __init__(self):
+##                super(DaeMaterial,self).__init__()
+##                self.asset = None
+##                self.iEffects = []
+##                self.extras = None
+##                self.syntax = DaeSyntax.MATERIAL
+##
+##        def LoadFromXml(self, daeDocument, xmlNode):
+##                super(DaeMaterial, self).LoadFromXml(daeDocument, xmlNode)
+##                self.extras = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.EXTRA, DaeExtra)
+##                self.asset = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.ASSET, DaeAsset)
+##                self.iEffects = CreateObjectsFromXml(daeDocument,xmlNode, DaeSyntax.INSTANCE_EFFECT, DaeEffectInstance)
+##
+##        def SaveToXml(self, daeDocument):
+##                node = super(DaeMaterial, self).SaveToXml(daeDocument)
+##                # Add the assets
+##                AppendChild(daeDocument,node,self.asset)
+##                # Add the effect instances
+##                AppendChilds(daeDocument, node, self.iEffects)
+##                # Add the extra's
+##                AppendChilds(self,node,self.extras)
+##                return node
+##
+##        def __str__(self):
+##                return super(DaeLight,self).__str__()+' assets: %s, data: %s, extras: %s'%(self.asset, self.data, self.extras)
 
 class DaeGeometry(DaeElement):
     def __init__(self):
@@ -908,6 +1057,11 @@ class DaeGeometry(DaeElement):
     def __str__(self):
         return super(DaeGeometry,self).__str__()+' assets: %s, data: %s, extras: %s'%(self.asset, self.data, self.extras)
 
+    def HasOnlyTriangles(self):
+        if isinstance(self.data, DaeMesh):
+            return self.data.HasOnlyTriangles()
+        return False
+
 class DaeConvexMesh(DaeEntity):
     def __init__(self):
         super(DaeConvexMesh, self).__init__()
@@ -934,7 +1088,7 @@ class DaeMesh(DaeEntity):
     def LoadFromXml(self, daeDocument, xmlNode):
         if xmlNode is None:
             return
-        self.vertices = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.VERTICES, DaeVertices)		  
+        self.vertices = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.VERTICES, DaeVertices)
         self.sources = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.SOURCE, DaeSource)
 
         lines = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.LINES, DaeLines)
@@ -944,13 +1098,13 @@ class DaeMesh(DaeEntity):
         triangles = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.TRIANGLES, DaeTriangles)
         trifans = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.TRIFANS, DaeTriFans)
         tristrips = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.TRISTRIPS, DaeTriStrips)
-        if lines != None: self.primitives += lines
-        if linestrips != None: self.primitives += linestrips
-        if polygons != None: self.primitives += polygons
-        if polylist != None: self.primitives += polylist
-        if triangles != None: self.primitives += triangles
-        if trifans != None: self.primitives += trifans
-        if tristrips != None: self.primitives += tristrips
+        if lines is not None: self.primitives += lines
+        if linestrips is not None: self.primitives += linestrips
+        if polygons is not None: self.primitives += polygons
+        if polylist is not None: self.primitives += polylist
+        if triangles is not None: self.primitives += triangles
+        if trifans is not None: self.primitives += trifans
+        if tristrips is not None: self.primitives += tristrips
 
         self.extras = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.EXTRA, DaeExtra)
 
@@ -967,6 +1121,13 @@ class DaeMesh(DaeEntity):
         AppendChilds(daeDocument, node, self.primitives)
         AppendChilds(daeDocument, node, self.extras)
         return node
+
+    def HasOnlyTriangles(self):
+        for primitive in self.primitives:
+            if not(isinstance(primitive, DaeTriangles)):
+                return False
+        return True
+
 class DaeVertices(DaeElement):
     def __init__(self):
         super(DaeVertices,self).__init__()
@@ -1036,38 +1197,41 @@ class DaeSource(DaeElement):
         floats = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.FLOAT_ARRAY, DaeFloatArray)
         ints = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.INT_ARRAY, DaeIntArray)
         names = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.NAME_ARRAY, DaeNameArray)
-        if bools != None:
+        ids = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.IDREF_ARRAY, DaeIDREFArray)
+        if bools is not None:
             self.source = bools
-        elif floats != None:
+        elif floats is not None:
             self.source = floats
-        elif ints != None:
+        elif ints is not None:
             self.source = ints
-        elif names != None:
+        elif names is not None:
             self.source = names
+        elif ids is not None:
+            self.source = ids
 
         self.techniqueCommon = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.TECHNIQUE_COMMON, DaeSource.DaeTechniqueCommon)
         self.techniques = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.TECHNIQUE,DaeTechnique)
         if not (self.techniqueCommon is None):
             for i in range(0,self.techniqueCommon.accessor.count):
-                vec = []			
+                vec = []
                 for j in range(0,self.techniqueCommon.accessor.stride):
                     vec.append(self.source.data[i*self.techniqueCommon.accessor.stride+j])
-                self.vectors.append(vec)	
+                self.vectors.append(vec)
 
     def SaveToXml(self, daeDocument):
         node = super(DaeSource, self).SaveToXml(daeDocument)
-##		  if len(self.vectors) > 0:
-##			  if type(self.vectors[0][0]) == float:
-##				  self.source = DaeFloatArray()
-##				  self.source.id = self.id+'-array'
-##				  
-##		  for i in range(len(self.vectors)):
-##			  for j in range(len(self.vectors[i])):
-##				  self.source.data.append(self.vectors[i][j])
+##                if len(self.vectors) > 0:
+##                        if type(self.vectors[0][0]) == float:
+##                                self.source = DaeFloatArray()
+##                                self.source.id = self.id+'-array'
+##
+##                for i in range(len(self.vectors)):
+##                        for j in range(len(self.vectors[i])):
+##                                self.source.data.append(self.vectors[i][j])
 
         # Add the source
         AppendChild(daeDocument, node, self.source)
-        # Add the technique common		 
+        # Add the technique common
         AppendChild(daeDocument,node,self.techniqueCommon)
         # Add the techniques
         AppendChilds(daeDocument, node, self.techniques)
@@ -1111,7 +1275,7 @@ class DaeLight(DaeElement):
         lightSourceNode = RemoveWhiteSpaceNode(FindElementByTagName(xmlNode, DaeSyntax.TECHNIQUE_COMMON)).firstChild
         lightSourceName = lightSourceNode.localName
         if lightSourceName == DaeSyntax.DIRECTIONAL:
-            self.techniqueCommon = DaeLight.DaeDirectional()			
+            self.techniqueCommon = DaeLight.DaeDirectional()
         elif lightSourceName == DaeSyntax.SPOT:
             self.techniqueCommon = DaeLight.DaeSpot()
         elif lightSourceName == DaeSyntax.AMBIENT:
@@ -1124,7 +1288,7 @@ class DaeLight(DaeElement):
         node = super(DaeLight, self).SaveToXml(daeDocument)
         # Add the assets
         AppendChild(daeDocument,node,self.asset)
-        # Add the technique common		 
+        # Add the technique common
         AppendChild(daeDocument,node,self.techniqueCommon)
         # Add the techniques
         AppendChilds(daeDocument, node, self.techniques)
@@ -1172,13 +1336,13 @@ class DaeLight(DaeElement):
     class DaeSpot(DaeTechniqueCommon):
         def __init__(self):
             super(DaeLight.DaeSpot,self).__init__()
-            self.defConstantAttenuation = 0.0
+            self.defConstantAttenuation = 1.0
             self.defLinearAttenuation = 0.0
             self.defQuadraticAttenuation = 0.0
             self.defFalloffAngle = 180.0
             self.defFalloffExponent = 0.0
 
-            self.constantAttenuation = 0.0
+            self.constantAttenuation = 1.0
             self.linearAttenuation = 0.0
             self.quadraticAttenuation = 0.0
             self.falloffAngle = 180.0
@@ -1187,11 +1351,11 @@ class DaeLight(DaeElement):
 
         def LoadFromXml(self, daeDocument, xmlNode):
             super(DaeLight.DaeSpot,self).LoadFromXml(daeDocument, xmlNode)
-            self.constantAttenuation = CastFromXml(daeDocument,xmlNode,DaeSyntax.CONSTANT_ATTENUATION, float, self.defConstantAttenuation, 1.0)
-            self.linearAttenuation = CastFromXml(daeDocument,xmlNode,DaeSyntax.LINEAR_ATTENUATION,float, self.defLinearAttenuation, 0)
-            self.quadraticAttenuation = CastFromXml(daeDocument, xmlNode,DaeSyntax.QUADRATIC_ATTENUATION, float, self.defQuadraticAttenuation, 0)
-            self.falloffAngle = CastFromXml(daeDocument, xmlNode, DaeSyntax.FALLOFF_ANGLE, float, self.defFalloffAngle, 180.0)
-            self.falloffExponent = CastFromXml(daeDocument, xmlNode, DaeSyntax.FALLOFF_EXPONENT, float, self.defFalloffExponent, 0)
+            self.constantAttenuation = CastFromXml(daeDocument,xmlNode,DaeSyntax.CONSTANT_ATTENUATION, float, 1.0)
+            self.linearAttenuation = CastFromXml(daeDocument,xmlNode,DaeSyntax.LINEAR_ATTENUATION,float, 0)
+            self.quadraticAttenuation = CastFromXml(daeDocument, xmlNode,DaeSyntax.QUADRATIC_ATTENUATION, float, 0)
+            self.falloffAngle = CastFromXml(daeDocument, xmlNode, DaeSyntax.FALLOFF_ANGLE, float, 180.0)
+            self.falloffExponent = CastFromXml(daeDocument, xmlNode, DaeSyntax.FALLOFF_EXPONENT, float, 0)
 
         def SaveToXml(self, daeDocument):
             node = super(DaeLight.DaeSpot,self).SaveToXml(daeDocument)
@@ -1225,7 +1389,7 @@ class DaeLight(DaeElement):
     class DaePoint(DaeTechniqueCommon):
         def __init__(self):
             super(DaeLight.DaePoint,self).__init__()
-            self.constantAttenuation = 0.0
+            self.constantAttenuation = 1.0
             self.linearAttenuation = 0.0
             self.quadraticAttenuation = 0.0
             self.syntax = DaeSyntax.POINT
@@ -1250,9 +1414,9 @@ class DaeVisualScene(DaeElement):
     def __init__(self):
         super(DaeVisualScene,self).__init__()
         self.asset = None
-        self.extras = None
+        self.extras = []
         self.nodes = []
-        self.syntax = DaeSyntax.VISUAL_SCENE		
+        self.syntax = DaeSyntax.VISUAL_SCENE
 
     def LoadFromXml(self, daeDocument, xmlNode):
         super(DaeVisualScene, self).LoadFromXml(daeDocument, xmlNode)
@@ -1283,7 +1447,7 @@ class DaeVisualScene(DaeElement):
 class DaeNode(DaeElement):
 
     NODE = 2
-    JOINT = 1	 
+    JOINT = 1
 
     def __init__(self):
         super(DaeNode,self).__init__()
@@ -1299,8 +1463,11 @@ class DaeNode(DaeElement):
         self.iGeometries = []
         self.iLights = []
         self.iNodes = []
-        self.iVisualScenes = []
 
+        self.parentNode = None
+
+        self.iVisualScenes = []
+        self.extras = []
         self.syntax = DaeSyntax.NODE
 
     def LoadFromXml(self, daeDocument, xmlNode):
@@ -1310,13 +1477,13 @@ class DaeNode(DaeElement):
         if type == DaeSyntax.TYPE_JOINT:
             self.type = DaeNode.JOINT
         else:
-            self.type = DaeNode.NODE			
+            self.type = DaeNode.NODE
         self.layer = ReadAttribute(xmlNode, DaeSyntax.LAYER).split()
 
         # Get transforms
         RemoveWhiteSpaceNode(xmlNode)
         child = xmlNode.firstChild
-        while child != None:
+        while child is not None:
             name = child.localName
             sid = ReadAttribute(child, DaeSyntax.SID)
             if name == DaeSyntax.TRANSLATE:
@@ -1343,14 +1510,21 @@ class DaeNode(DaeElement):
         self.iNodes = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.INSTANCE_NODE, DaeNodeInstance)
         self.iVisualScenes = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.INSTANCE_VISUAL_SCENE, DaeVisualSceneInstance)
 
+        self.extras = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.EXTRA, DaeExtra)
+
         # Get childs nodes
         self.nodes = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.NODE, DaeNode)
+        for node in self.nodes:
+            node.parentNode = self
 
     def SaveToXml(self, daeDocument):
         node = super(DaeNode, self).SaveToXml(daeDocument)
-        SetAttribute(node, DaeSyntax.SID, self.sid)
         if self.type == DaeSyntax.TYPE_JOINT:
-            SetAttribute(node, DaeSyntax.TYPE, DaeNode.GetType(self.type))
+            SetAttribute(node, DaeSyntax.TYPE, self.type)##DaeNode.GetType(self.type))
+        SetAttribute(node, DaeSyntax.SID, StripString(self.sid))
+
+
+
 
         # Add the layers
         SetAttribute(node, DaeSyntax.LAYER, ListToString(self.layer))
@@ -1363,7 +1537,8 @@ class DaeNode(DaeElement):
                 AppendTextChild(node,i[0],val)
             else:
                 orgval = val
-                val = ListToString(RoundList(val, 5))
+##                              val = ListToString(RoundList(val, 5))
+                val = ListToString(val, ROUND)
                 if i[0] == DaeSyntax.SCALE:
                     ##AppendTextChild(node,i[0],val,"1.0 1.0 1.0")
                     SetAttribute(AppendTextChild(node,i[0],val,None), DaeSyntax.SID, DaeSyntax.SCALE)
@@ -1380,7 +1555,7 @@ class DaeNode(DaeElement):
                     elif orgval[0] == 0 and orgval[1] == 0 and orgval[2] == 1:
                         axis = "Z"
                     no = AppendTextChild(node,i[0],val,None)
-                    if axis != None:
+                    if axis is not None:
                         SetAttribute(no, DaeSyntax.SID, DaeSyntax.ROTATE+axis)
 
                 elif i[0] == DaeSyntax.SKEW:
@@ -1388,7 +1563,7 @@ class DaeNode(DaeElement):
                 elif i[0] == DaeSyntax.MATRIX or i[0] == DaeSyntax.LOOKAT:
                     AppendTextChild(node,i[0],val)
 
-        AppendChilds(daeDocument, node, self.nodes) 		   
+        AppendChilds(daeDocument, node, self.nodes)
 
         AppendChilds(daeDocument, node, self.iAnimations)
         AppendChilds(daeDocument, node, self.iCameras)
@@ -1397,6 +1572,8 @@ class DaeNode(DaeElement):
         AppendChilds(daeDocument, node, self.iLights)
         AppendChilds(daeDocument, node, self.iNodes)
         AppendChilds(daeDocument, node, self.iVisualScenes)
+
+        AppendChilds(daeDocument, node, self.extras)
 
         return node
 
@@ -1415,22 +1592,38 @@ class DaeNode(DaeElement):
 
 
 
-# TODO:  Collada API: finish DaeTechnique 
+# TODO:  Collada API: finish DaeTechnique
 class DaeTechnique(DaeEntity):
     def __init__(self):
         super(DaeTechnique,self).__init__()
-        self.profile = ''
+        self.profile = 'Blender'
         self.xmlns = ''
+        self.params = []
         self.syntax = DaeSyntax.TECHNIQUE
 
     def LoadFromXml(self, daeDocument, xmlNode):
         self.profile = xmlNode.getAttribute(DaeSyntax.PROFILE)
         self.xmlns = xmlNode.getAttribute(DaeSyntax.XMLNS)
+        self.params = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.PARAM, DaeParam)
+
+    def AddParam(self, name, type, value):
+        param = DaeParam()
+        param.name = name
+        param.type = type
+        param.value = value
+        self.params.append( param )
+
+    def FindParam(self, name):
+        for param in self.params:
+            if param.name == name:
+                return param
+        return None
 
     def SaveToXml(self, daeDocument):
         node = super(DaeTechnique,self).SaveToXml(daeDocument)
         node.setAttribute(DaeSyntax.PROFILE, self.profile)
         SetAttribute(node, DaeSyntax.XMLNS, self.xmlns)
+        AppendChilds(daeDocument, node, self.params)
         return node
 
 class DaeOptics(DaeEntity):
@@ -1456,7 +1649,7 @@ class DaeOptics(DaeEntity):
 
     def SaveToXml(self, daeDocument):
         node = super(DaeOptics, self).SaveToXml(daeDocument)
-        # Add the technique common		 
+        # Add the technique common
         AppendChild(daeDocument,node,self.techniqueCommon)
         # Add the techniques
         AppendChilds(daeDocument, node, self.techniques)
@@ -1483,13 +1676,13 @@ class DaeOptics(DaeEntity):
         def SaveToXml(self, daeDocument):
             node = Element(DaeSyntax.TECHNIQUE_COMMON)
             child = super(DaeOptics.DaeTechniqueCommon,self).SaveToXml(daeDocument)
-##			  AppendTextChild(child,DaeSyntax.ZNEAR, self.znear)
-##			  AppendTextChild(child,DaeSyntax.ZFAR, self.zfar)
-##			  AppendTextChild(child,DaeSyntax.ASPECT_RATIO, self.aspectRatio)			 
+##                        AppendTextChild(child,DaeSyntax.ZNEAR, self.znear)
+##                        AppendTextChild(child,DaeSyntax.ZFAR, self.zfar)
+##                        AppendTextChild(child,DaeSyntax.ASPECT_RATIO, self.aspectRatio)
             node.appendChild(child)
             return node
 
-        def SavePropertiesToXml(self, daeDocument, node):			 
+        def SavePropertiesToXml(self, daeDocument, node):
             AppendTextChild(node,DaeSyntax.ZNEAR, self.znear)
             AppendTextChild(node,DaeSyntax.ZFAR, self.zfar)
             AppendTextChild(node,DaeSyntax.ASPECT_RATIO, self.aspectRatio)
@@ -1591,7 +1784,7 @@ class DaeAccessor(DaeEntity):
         self.offset = None
         self.source = ''
         self.__stride = None
-##		self.stride = property(self.GetStride)
+##              self.stride = property(self.GetStride)
         self.params = []
 
         self.syntax = DaeSyntax.ACCESSOR
@@ -1638,8 +1831,9 @@ class DaeParam(DaeEntity):
         super(DaeParam,self).__init__()
         self.name = None
         self.semantic = None
-        self.sid = None 
-        self.type = ''	 
+        self.sid = None
+        self.type = ''
+        self.value = ''
         self.syntax = DaeSyntax.PARAM
 
     def LoadFromXml(self, daeDocument, xmlNode):
@@ -1647,6 +1841,7 @@ class DaeParam(DaeEntity):
         self.sid = ReadAttribute(xmlNode, DaeSyntax.SID)
         self.name = ReadAttribute(xmlNode, DaeSyntax.NAME)
         self.type = xmlNode.getAttribute(DaeSyntax.TYPE)
+        self.value = ReadContents(xmlNode)
 
     def SaveToXml(self, daeDocument):
         node = super(DaeParam,self).SaveToXml(daeDocument)
@@ -1654,6 +1849,7 @@ class DaeParam(DaeEntity):
         SetAttribute(node, DaeSyntax.SID, self.sid)
         SetAttribute(node, DaeSyntax.NAME, self.name)
         node.setAttribute(DaeSyntax.TYPE, self.type)
+        AppendTextInChild(node, self.value)
         return node
 
 class DaeArray(DaeElement):
@@ -1730,7 +1926,7 @@ class DaePrimitive(DaeEntity):
         super(DaePrimitive, self).__init__()
         self.name = None
         self.count = 0
-        self.material = ''		  
+        self.material = ''
         self.inputs = []
 
     def LoadFromXml(self, daeDocument, xmlNode):
@@ -1745,11 +1941,11 @@ class DaePrimitive(DaeEntity):
         node.setAttribute(DaeSyntax.COUNT, str(self.count))
         return node
 
-    def GetMaxOffset(self):
+    def GetStride(self):
         if self.inputs != []:
-            return max([i.offset for i in self.inputs])
+            return max([i.offset for i in self.inputs])+1
         else:
-            return None
+            return 0
 
     def FindInput(self, semantic):
         for i in self.inputs:
@@ -1801,15 +1997,22 @@ class DaePolygons(DaePrimitive):
         node = super(DaePolygons,self).SaveToXml(daeDocument)
         AppendChilds(daeDocument, node, self.inputs)
         AppendChilds(node, DaeSyntax.P, self.polygons)
-        return node 	   
+        return node
 
 class DaePolylist(DaePrimitive):
     def __init__(self):
         super(DaePolylist, self).__init__()
         self.syntax = DaeSyntax.POLYLIST
+        self.vcount = []
+        self.polygons = []
+        self.inputs = []
+
 
     def LoadFromXml(self, daeDocument, xmlNode):
         super(DaePolylist,self).LoadFromXml(daeDocument, xmlNode)
+        self.polygons = ToIntList(ReadContents(FindElementByTagName(xmlNode,DaeSyntax.P)))
+        self.inputs = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.INPUT, DaeInput)
+        self.vcount = ToIntList(ReadContents(FindElementByTagName(xmlNode, DaeSyntax.VCOUNT)))
 
 class DaeTriangles(DaePrimitive):
     def __init__(self):
@@ -1832,23 +2035,42 @@ class DaeTriFans(DaePrimitive):
     def __init__(self):
         super(DaeTriFans, self).__init__()
         self.syntax = DaeSyntax.TRIFANS
+        self.trifans = []
 
     def LoadFromXml(self, daeDocument, xmlNode):
         super(DaeTriFans,self).LoadFromXml(daeDocument, xmlNode)
+        self.inputs = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.INPUT, DaeInput)
+        self.trifans = GetListFromNodes(xmlNode.getElementsByTagName(DaeSyntax.P), int)
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeTriFans,self).SaveToXml(daeDocument)
+        AppendChilds(daeDocument, node, self.inputs)
+        AppendChilds(node, DaeSyntax.P, self.trifans)
+        return node
 
 class DaeTriStrips(DaePrimitive):
     def __init__(self):
         super(DaeTriStrips, self).__init__()
         self.syntax = DaeSyntax.TRISTRIPS
+        self.tristrips = []
 
     def LoadFromXml(self, daeDocument, xmlNode):
         super(DaeTriStrips,self).LoadFromXml(daeDocument, xmlNode)
+        self.inputs = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.INPUT, DaeInput)
+        self.tristrips = GetListFromNodes(xmlNode.getElementsByTagName(DaeSyntax.P), int)
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeTriStrips,self).SaveToXml(daeDocument)
+        AppendChilds(daeDocument, node, self.inputs)
+        AppendChilds(node, DaeSyntax.P, self.tristrips)
+        return node
+
 #---instance Classes---
 class DaeInstance(DaeEntity):
     def __init__(self):
         super(DaeInstance, self).__init__()
         self.url = ''
-        self.extras = []		
+        self.extras = []
         self.object = None
 
     def LoadFromXml(self, daeDocument, xmlNode):
@@ -1863,7 +2085,7 @@ class DaeInstance(DaeEntity):
 
 class DaeAnimationInstance(DaeInstance):
     def __init__(self):
-        super(DaeAnimationInstance, self).__init__()		
+        super(DaeAnimationInstance, self).__init__()
         self.syntax = DaeSyntax.INSTANCE_ANIMATION
 
     def LoadFromXml(self, daeDocument, xmlNode):
@@ -1876,7 +2098,7 @@ class DaeAnimationInstance(DaeInstance):
 
 class DaeCameraInstance(DaeInstance):
     def __init__(self):
-        super(DaeCameraInstance, self).__init__()		 
+        super(DaeCameraInstance, self).__init__()
         self.syntax = DaeSyntax.INSTANCE_CAMERA
 
     def LoadFromXml(self, daeDocument, xmlNode):
@@ -1889,27 +2111,28 @@ class DaeCameraInstance(DaeInstance):
 
 class DaeControllerInstance(DaeInstance):
     def __init__(self):
-        super(DaeControllerInstance, self).__init__()		 
+        super(DaeControllerInstance, self).__init__()
         self.skeletons = []
         self.bindMaterials = []
         self.syntax = DaeSyntax.INSTANCE_CONTROLLER
 
     def LoadFromXml(self, daeDocument, xmlNode):
         super(DaeControllerInstance,self).LoadFromXml(daeDocument, xmlNode)
-        self.skeletons = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.SKELETON, DaeSkeleton)
+        self.skeletons = GetStringArrayFromNodes(xmlNode.getElementsByTagName(DaeSyntax.SKELETON))
         self.bindMaterials = CreateObjectsFromXml(daeDocument, xmlNode, DaeFxSyntax.BIND_MATERIAL, DaeFxBindMaterial)
         self.object = daeDocument.controllersLibrary.FindObject(self.url)
 
     def SaveToXml(self, daeDocument):
         node = super(DaeControllerInstance,self).SaveToXml(daeDocument)
-        AppendChilds(daeDocument, node, self.skeletons)
+        for skeleton in self.skeletons:
+            AppendTextChild(node, DaeSyntax.SKELETON, "#"+skeleton)
         AppendChilds(daeDocument, node, self.bindMaterials)
         return node
 
 # TODO:  Collada API: finish DaeEffectInstance
 class DaeEffectInstance(DaeInstance):
     def __init__(self):
-        super(DaeEffectInstance, self).__init__()		 
+        super(DaeEffectInstance, self).__init__()
 
         self.syntax = DaeSyntax.INSTANCE_EFFECT
 
@@ -1939,7 +2162,7 @@ class DaeGeometryInstance(DaeInstance):
 
 class DaeLightInstance(DaeInstance):
     def __init__(self):
-        super(DaeLightInstance, self).__init__()		   
+        super(DaeLightInstance, self).__init__()
         self.syntax = DaeSyntax.INSTANCE_LIGHT
 
     def LoadFromXml(self, daeDocument, xmlNode):
@@ -1952,7 +2175,7 @@ class DaeLightInstance(DaeInstance):
 
 class DaeNodeInstance(DaeInstance):
     def __init__(self):
-        super(DaeNodeInstance, self).__init__() 	   
+        super(DaeNodeInstance, self).__init__()
         self.syntax = DaeSyntax.INSTANCE_NODE
 
     def LoadFromXml(self, daeDocument, xmlNode):
@@ -1965,7 +2188,7 @@ class DaeNodeInstance(DaeInstance):
 
 class DaeVisualSceneInstance(DaeInstance):
     def __init__(self):
-        super(DaeVisualSceneInstance, self).__init__()		  
+        super(DaeVisualSceneInstance, self).__init__()
         self.syntax = DaeSyntax.INSTANCE_VISUAL_SCENE
 
     def LoadFromXml(self, daeDocument, xmlNode):
@@ -1975,21 +2198,6 @@ class DaeVisualSceneInstance(DaeInstance):
     def SaveToXml(self, daeDocument):
         node = super(DaeVisualSceneInstance,self).SaveToXml(daeDocument)
         return node
-
-
-class DaeSkeleton(DaeEntity):
-    def __init__(self):
-        super(DaeSkeleton,self).__init__()
-        self.iControllers = []
-
-    def LoadFromXml(self, daeDocument, xmlNode):
-        self.iControllers = CreateObjectsFromXml(daeDocument, xmlNode, DaeSyntax.INSTANCE_CONTROLLER, DaeControllerInstance)
-
-    def SaveToXml(self, daeDocument):
-        node = super(DaeSkeleton, self).SaveToXml(daeDocument)
-        AppendChilds(daeDocument, node, self.iControllers)
-        return node
-
 
 class DaeSyntax(object):
 
@@ -2019,6 +2227,8 @@ class DaeSyntax(object):
     PROFILE = 'profile'
     TECHNIQUE = 'technique'
     TECHNIQUE_COMMON = 'technique_common'
+
+    VCOUNT = 'vcount'
 
     ##BIND_MATERIAL = 'bind_material'
     SKELETON = 'skeleton'
@@ -2062,7 +2272,7 @@ class DaeSyntax(object):
     MESH = 'mesh'
     CONVEX_MESH ='convex_mesh'
     SPLINE = 'spline'
-    SOURCE	='source'
+    SOURCE  ='source'
     VERTICES = 'vertices'
     ACCESSOR = 'accessor'
 
@@ -2172,11 +2382,32 @@ class DaeSyntax(object):
     SAMPLER = 'sampler'
     CHANNEL = 'channel'
 
+    #---controller---
+    SKIN = 'skin'
+    MORPH = 'morph'
+
+
+    #---skin---
+    JOINTS = 'joints'
+    VERTEX_WEIGHTS = 'vertex_weights'
+    BIND_SHAPE_MATRIX ='bind_shape_matrix'
+    VCOUNT = 'vcount'
+    V = 'v'
+
+    IDREF = 'IDREF'
+    FLOAT = 'float'
+
+    #-- types---
+    LISTOFNAMES = 'ListOfNames'
+    LISTOFINTS = 'ListOfInts'
+    INT = 'int'
+    STRING = 'string'
+
 class DaeFxBindMaterial(DaeEntity):
     def __init__(self):
         super(DaeFxBindMaterial, self).__init__()
         self.syntax = DaeFxSyntax.BIND_MATERIAL
-        self.techniqueCommon = DaeFxBindMaterial.DaeFxTechniqueCommon() 	   
+        self.techniqueCommon = DaeFxBindMaterial.DaeFxTechniqueCommon()
 
     def LoadFromXml(self, daeDocument, xmlNode):
         self.techniqueCommon = CreateObjectFromXml(daeDocument, xmlNode, DaeFxSyntax.TECHNIQUE_COMMON, DaeFxBindMaterial.DaeFxTechniqueCommon)
@@ -2187,7 +2418,7 @@ class DaeFxBindMaterial(DaeEntity):
         return node
 
     class DaeFxTechniqueCommon(DaeEntity):
-        def __init__(self): 		   
+        def __init__(self):
             self.syntax = DaeFxSyntax.TECHNIQUE_COMMON
             self.iMaterials = []
 
@@ -2202,24 +2433,47 @@ class DaeFxBindMaterial(DaeEntity):
         def __str__(self):
             return super(DaeFxBindMaterial.DaeFxTechniqueCommon,self).__str__()
 
+class DaeFxBindVertexInput(DaeEntity):
+    def __init__(self):
+        super(DaeFxBindVertexInput, self).__init__()
+        self.semantic = "CHANNEL1"
+        self.input_semantic = "TEXCOORD"
+        self.input_set = "1"
+        self.syntax = "bind_vertex_input"
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        self.semantic = ReadAttribute(xmlNode, "semantic")
+        self.input_set = ReadAttribute(xmlNode, "input_semantic")
+        self.input_semantic = ReadAttribute(xmlNode, "input_set")
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeFxBindVertexInput,self).SaveToXml(daeDocument)
+        SetAttribute(node, "semantic", self.semantic)
+        SetAttribute(node, "input_semantic", self.input_semantic)
+        SetAttribute(node, "input_set", self.input_set)
+        return node
+
 
 class DaeFxMaterialInstance(DaeEntity):
     def __init__(self):
         super(DaeFxMaterialInstance, self).__init__()
         self.target = ''
         self.symbol = ''
+        self.bind = DaeFxBindVertexInput()
         self.object = None
         self.syntax = DaeFxSyntax.INSTANCE_MATERIAL
 
     def LoadFromXml(self, daeDocument, xmlNode):
         self.target = ReadAttribute(xmlNode, DaeFxSyntax.TARGET)[1:]
         self.symbol = ReadAttribute(xmlNode, DaeFxSyntax.SYMBOL)
+        self.bind = CreateObjectFromXml(daeDocument, xmlNode, "bind_vetex_input", DaeFxBindVertexInput)
         self.object = daeDocument.materialsLibrary.FindObject(self.target)
 
     def SaveToXml(self, daeDocument):
         node = super(DaeFxMaterialInstance,self).SaveToXml(daeDocument)
         SetAttribute(node, DaeFxSyntax.TARGET, StripString('#'+self.object.id))
         SetAttribute(node, DaeFxSyntax.SYMBOL, StripString(self.object.id))
+        AppendChild(daeDocument,node,self.bind)
         return node
 
     def __str__(self):
@@ -2271,15 +2525,18 @@ class DaeFxEffect(DaeElement):
     def __init__(self):
         super(DaeFxEffect, self).__init__()
         self.profileCommon = DaeFxProfileCommon()
+        self.newParams = []
         self.syntax = DaeFxSyntax.EFFECT
 
 
     def LoadFromXml(self, daeDocument, xmlNode):
         super(DaeFxEffect, self).LoadFromXml(daeDocument, xmlNode)
+        self.newParams = CreateObjectsFromXml(daeDocument, xmlNode, DaeFxSyntax.NEWPARAM, DaeFxNewParam)
         self.profileCommon = CreateObjectFromXml(daeDocument, xmlNode, DaeFxSyntax.PROFILE_COMMON, DaeFxProfileCommon)
 
     def SaveToXml(self, daeDocument):
         node = super(DaeFxEffect,self).SaveToXml(daeDocument)
+        AppendChilds(daeDocument, node, self.newParams)
         AppendChild(daeDocument, node, self.profileCommon)
         return node
 
@@ -2288,6 +2545,102 @@ class DaeFxEffect(DaeElement):
 
     def AddShader(self, daeShader):
         self.profileCommon.technique.shader = daeShader
+
+class DaeFxSampler2D(DaeElement):
+    def __init__(self):
+        super(DaeFxSampler2D, self).__init__()
+        self.syntax = DaeFxSyntax.SAMPLER2D
+        self.source = DaeSamplerSource()
+        self.minfilter = DaeMinFilter()
+        self.maxfilter = DaeMaxFilter()
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        super(DaeFxSampler2D, self).LoadFromXml(daeDocument, xmlNode)
+        self.source = str(ReadContents(FindElementByTagName(xmlNode, DaeSyntax.SOURCE)))
+        self.minfilter = CreateObjectFromXml(daeDocument, xmlNode, "minfilter", DaeMinFilter)
+        self.maxfilter = CreateObjectFromXml(daeDocument, xmlNode, "maxfilter", DaeMaxFilter)
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeFxSampler2D,self).SaveToXml(daeDocument)
+        AppendChild(daeDocument, node, self.source)
+        AppendChild(daeDocument, node, self.minfilter)
+        AppendChild(daeDocument, node, self.maxfilter)
+
+        return node
+
+    def __str__(self):
+        return super(DaeFxEffect, self).__str__() + ', profileCommon: %s' % (self.profileCommon)
+
+    def AddShader(self, daeShader):
+        self.profileCommon.technique.shader = daeShader
+
+class DaeFxSurface(DaeElement):
+    def __init__(self):
+        super(DaeFxSurface, self).__init__()
+        self.syntax = DaeFxSyntax.SURFACE
+        self.initfrom = ""
+        self.format = "A8R8G8B8"
+        self.type = "2D"
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        super(DaeFxSurface, self).LoadFromXml(daeDocument, xmlNode)
+        self.type = ReadAttribute(xmlNode, DaeSyntax.TYPE)
+        self.initfrom = str(ReadContents(FindElementByTagName(xmlNode, DaeSyntax.INIT_FROM)))
+        if (FindElementByTagName(xmlNode, DaeSyntax.FORMAT)):
+            self.format = str(ReadContents(FindElementByTagName(xmlNode, DaeSyntax.FORMAT)))
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeFxSurface,self).SaveToXml(daeDocument)
+        SetAttribute(node, DaeSyntax.TYPE, self.type)
+        AppendTextChild(node, DaeSyntax.INIT_FROM, StripString(self.initfrom), None)
+        AppendTextChild(node, DaeSyntax.FORMAT, self.format, None)
+        return node
+
+class DaeSamplerSource(DaeElement):
+    def __init__(self):
+        self.syntax = DaeSyntax.SOURCE
+        self.id = ""
+        self.name = ""
+        self.value = ""
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        self.value = ReadContents(xmlNode)
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeSamplerSource,self).SaveToXml(daeDocument)
+        AppendTextInChild(node, StripString(self.value))
+        return node
+
+class DaeMinFilter(DaeElement):
+    def __init__(self):
+        self.syntax = "minfilter"
+        self.id = ""
+        self.name = ""
+        self.value = "LINEAR_MIPMAP_LINEAR"
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        self.value = ReadContents(xmlNode)
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeMinFilter,self).SaveToXml(daeDocument)
+        AppendTextInChild(node, self.value)
+        return node
+
+class DaeMaxFilter(DaeElement):
+    def __init__(self):
+        self.syntax = "maxfilter"
+        self.id = ""
+        self.name = ""
+        self.value = "LINEAR"
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        self.value = ReadContents(xmlNode)
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeMaxFilter,self).SaveToXml(daeDocument)
+        AppendTextInChild(node, self.value)
+        return node
+
 
 class DaeFxProfileCommon(DaeEntity):
     def __init__(self):
@@ -2328,13 +2681,29 @@ class DaeFxImage(DaeEntity):
 class DaeFxNewParam(DaeEntity):
     def __init__(self):
         super(DaeFxNewParam, self).__init__()
+        self.sid = ""
+        self.sampler = None
+        self.surface = None
         self.syntax = DaeFxSyntax.NEWPARAM
 
     def LoadFromXml(self, daeDocument, xmlNode):
-        super(DaeFxNewParam, self).LoadFromXml(daeDocument, xmlNode)
+        self.sid = ReadAttribute(xmlNode, DaeSyntax.SID)
+        samplerNode = FindElementByTagName(xmlNode, DaeFxSyntax.SAMPLER2D)
+        if samplerNode:
+            self.sampler = CreateObjectFromXml(daeDocument, xmlNode, DaeFxSyntax.SAMPLER2D, DaeFxSampler2D)
+
+        surfaceNode = FindElementByTagName(xmlNode, DaeFxSyntax.SURFACE)
+        if surfaceNode:
+            self.surface = CreateObjectFromXml(daeDocument, xmlNode, DaeFxSyntax.SURFACE, DaeFxSurface)
 
     def SaveToXml(self, daeDocument):
         node = super(DaeFxNewParam,self).SaveToXml(daeDocument)
+        SetAttribute(node, DaeSyntax.SID, StripString(self.sid))
+        if self.sampler is not None:
+            AppendChild(daeDocument, node, self.sampler)
+        if self.surface is not None:
+            AppendChild(daeDocument, node, self.surface)
+
         return node
 
 class DaeFxTechnique(DaeEntity):
@@ -2342,14 +2711,14 @@ class DaeFxTechnique(DaeEntity):
         super(DaeFxTechnique, self).__init__()
         self.syntax = DaeFxSyntax.TECHNIQUE
         self.shader = DaeFxShadeConstant()
-        self.sid = ''
+        self.sid = 'blender'
 
     def LoadFromXml(self, daeDocument, xmlNode):
         # TODO:  Collada API: add asset and extra?
         self.sid = ReadAttribute(xmlNode, DaeFxSyntax.SID)
         lightSourceNode = FindElementByTagName(xmlNode, DaeFxSyntax.CONSTANT)
         if lightSourceNode:
-            self.shader = CreateObjectFromXml(daeDocument, xmlNode, DaeFxSyntax.CONSTANT, DaeFxShadeConstant)			 
+            self.shader = CreateObjectFromXml(daeDocument, xmlNode, DaeFxSyntax.CONSTANT, DaeFxShadeConstant)
         else:
             lightSourceNode = FindElementByTagName(xmlNode, DaeFxSyntax.LAMBERT)
             if lightSourceNode:
@@ -2570,11 +2939,11 @@ class DaeFxTexture(DaeEntity):
     def __init__(self):
         super(DaeFxTexture, self).__init__()
         self.texture = ''
-        self.textCoord = ''
+        self.textCoord = 'CHANNEL1'
         self.syntax = DaeFxSyntax.TEXTURE
 
     def LoadFromXml(self, daeDocument, xmlNode):
-        self.texture = daeDocument.imagesLibrary.FindObject(ReadAttribute(xmlNode, DaeFxSyntax.TEXTURE))
+        self.texture = ReadAttribute(xmlNode, DaeFxSyntax.TEXTURE)
         self.textCoord = ReadAttribute(xmlNode, DaeFxSyntax.TEXCOORD)
 
     def SaveToXml(self, daeDocument):
@@ -2584,21 +2953,21 @@ class DaeFxTexture(DaeEntity):
         return node
 
 class DaeFxSyntax(object):
-    COLOR = 'color'  
+    COLOR = 'color'
     INSTANCE_MATERIAL = 'instance_material'
     INSTANCE_EFFECT = 'instance_effect'
     TECHNIQUE_COMMON = 'technique_common'
     SID = 'sid'
     EMISSION = 'emission'
     REFLECTIVE ='reflective'
-    REFLECTIVITY = 'reflectivity'	 
+    REFLECTIVITY = 'reflectivity'
     TRANSPARENT = 'transparent'
     TRANSPARENCY = 'transparency'
     INDEXOFREFRACTION = 'index_of_refraction'
     TEXTURE = 'texture'
     TEXCOORD = 'texcoord'
     AMBIENT = 'ambient'
-    DIFFUSE = 'diffuse'    
+    DIFFUSE = 'diffuse'
 
     BIND_MATERIAL ='bind_material'
     PROFILE_COMMON = 'profile_COMMON'
@@ -2617,6 +2986,8 @@ class DaeFxSyntax(object):
 
     IMAGE = 'image'
     NEWPARAM = 'newparam'
+    SAMPLER2D = 'sampler2D'
+    SURFACE = 'surface'
     TECHNIQUE = 'technique'
 
     CONSTANT = 'constant'
@@ -2630,7 +3001,7 @@ class DaePhysicsScene(DaeElement):
         self.asset = None
         self.extras = None
         self.iPhysicsModels = []
-        self.syntax = DaePhysicsSyntax.PHYSICS_SCENE	   
+        self.syntax = DaePhysicsSyntax.PHYSICS_SCENE
 
     def LoadFromXml(self, daeDocument, xmlNode):
         super(DaePhysicsScene, self).LoadFromXml(daeDocument, xmlNode)
@@ -2653,9 +3024,10 @@ class DaePhysicsScene(DaeElement):
 
 class DaePhysicsModelInstance(DaeInstance):
     def __init__(self):
-        super(DaePhysicsModelInstance, self).__init__() 	   
+        super(DaePhysicsModelInstance, self).__init__()
         self.syntax = DaePhysicsSyntax.INSTANCE_PHYSICS_MODEL
         self.iRigidBodies = []
+        self.iConstraints = []
 
     def LoadFromXml(self, daeDocument, xmlNode):
         super(DaePhysicsModelInstance,self).LoadFromXml(daeDocument, xmlNode)
@@ -2665,6 +3037,7 @@ class DaePhysicsModelInstance(DaeInstance):
     def SaveToXml(self, daeDocument):
         node = super(DaePhysicsModelInstance,self).SaveToXml(daeDocument)
         AppendChilds(daeDocument, node, self.iRigidBodies)
+        AppendChilds(daeDocument, node, self.iConstraints)
         return node
 
     def CreateInstanceRigidBodies(self, daeDocument, xmlNode, physicsModel):
@@ -2700,10 +3073,10 @@ class DaePhysicsSceneInstance(DaeInstance):
 
 class DaePhysicsMaterialInstance(DaeInstance):
     def __init__(self):
-        super(DaePhysicsMaterialInstance, self).__init__()		  
+        super(DaePhysicsMaterialInstance, self).__init__()
         self.syntax = DaePhysicsSyntax.INSTANCE_PHYSICS_MATERIAL
 
-    def LoadFromXml(self, daeDocument, xmlNode):		
+    def LoadFromXml(self, daeDocument, xmlNode):
         super(DaePhysicsMaterialInstance,self).LoadFromXml(daeDocument, xmlNode)
         self.object = daeDocument.physicsMaterialsLibrary.FindObject(self.url)
 
@@ -2713,42 +3086,48 @@ class DaePhysicsMaterialInstance(DaeInstance):
 
 class DaeRigidBodyInstance(DaeEntity):
     def __init__(self):
-        super(DaeRigidBodyInstance, self).__init__()		
+        super(DaeRigidBodyInstance, self).__init__()
         self.syntax = DaePhysicsSyntax.INSTANCE_RIGID_BODY
         self.body = None
         self.target = None
         self.bodyString = ''
         self.targetString = ''
 
-    def LoadFromXml(self, daeDocument, xmlNode):		
+    def LoadFromXml(self, daeDocument, xmlNode):
         self.bodyString = ReadAttribute(xmlNode, DaeSyntax.BODY)
         self.targetString = ReadAttribute(xmlNode, DaeSyntax.TARGET)[1:]
 
     def SaveToXml(self, daeDocument):
         node = super(DaeRigidBodyInstance,self).SaveToXml(daeDocument)
-        SetAttribute(node, DaeSyntax.BODY, self.body.sid)
-        SetAttribute(node, DaeSyntax.TARGET, StripString('#'+self.target.id))		 
+        SetAttribute(node, DaeSyntax.BODY, StripString(self.body.sid))
+        SetAttribute(node, DaeSyntax.TARGET, StripString('#'+self.target.id))
         return node
+
+
 
 class DaePhysicsModel(DaeElement):
     def __init__(self):
         super(DaePhysicsModel,self).__init__()
         self.syntax = DaePhysicsSyntax.PHYSICS_MODEL
         self.rigidBodies = []
+        self.constraints = []
 
     def LoadFromXml(self, daeDocument, xmlNode):
         super(DaePhysicsModel, self).LoadFromXml(daeDocument, xmlNode)
-        self.rigidBodies = CreateObjectsFromXml(daeDocument, xmlNode, DaePhysicsSyntax.RIGID_BODY, DaeRigidBody)		
+        self.rigidBodies = CreateObjectsFromXml(daeDocument, xmlNode, DaePhysicsSyntax.RIGID_BODY, DaeRigidBody)
+        #constraints not yet
 
     def SaveToXml(self, daeDocument):
         node = super(DaePhysicsModel, self).SaveToXml(daeDocument)
         # Add the rigid bodies
         AppendChilds(daeDocument, node, self.rigidBodies)
+        AppendChilds(daeDocument, node, self.constraints)
         return node
 
     def FindRigidBody(self, url):
         for rigidBody in self.rigidBodies:
             if rigidBody.sid == url:
+
                 return rigidBody
         return None
 
@@ -2760,7 +3139,7 @@ class DaePhysicsMaterial(DaeElement):
 
     def LoadFromXml(self, daeDocument, xmlNode):
         super(DaePhysicsMaterial, self).LoadFromXml(daeDocument, xmlNode)
-        self.techniqueCommon = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.TECHNIQUE_COMMON, DaePhysicsMaterial.DaeTechniqueCommon) 	   
+        self.techniqueCommon = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.TECHNIQUE_COMMON, DaePhysicsMaterial.DaeTechniqueCommon)
 
     def SaveToXml(self, daeDocument):
         node = super(DaePhysicsMaterial, self).SaveToXml(daeDocument)
@@ -2777,7 +3156,7 @@ class DaePhysicsMaterial(DaeElement):
 
         def LoadFromXml(self, daeDocument, xmlNode):
             self.dynamicFriction = CastFromXml(daeDocument, xmlNode, DaePhysicsSyntax.DYNAMIC_FRICTION, float, 0)
-            self.restitution = CastFromXml(daeDocument, xmlNode, DaePhysicsSyntax.RESTITUTION,	float, 0)
+            self.restitution = CastFromXml(daeDocument, xmlNode, DaePhysicsSyntax.RESTITUTION,      float, 0)
             self.staticFriction = CastFromXml(daeDocument, xmlNode, DaePhysicsSyntax.STATIC_FRICTION, float, 0)
 
         def SaveToXml(self, daeDocument):
@@ -2801,7 +3180,7 @@ class DaeRigidBody(DaeEntity):
     def LoadFromXml(self, daeDocument, xmlNode):
         self.name = xmlNode.getAttribute(DaeSyntax.NAME)
         self.sid = xmlNode.getAttribute(DaeSyntax.SID)
-        self.techniqueCommon = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.TECHNIQUE_COMMON, DaeRigidBody.DaeTechniqueCommon)		 
+        self.techniqueCommon = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.TECHNIQUE_COMMON, DaeRigidBody.DaeTechniqueCommon)
 
     def SaveToXml(self, daeDocument):
         node = super(DaeRigidBody, self).SaveToXml(daeDocument)
@@ -2816,14 +3195,14 @@ class DaeRigidBody(DaeEntity):
             self.syntax = DaeSyntax.TECHNIQUE_COMMON
             self.iPhysicsMaterial = None
             self.physicsMaterial = None
-            self.dynamic = True 
+            self.dynamic = True
             self.mass = None
             self.inertia = None
             self.shapes = []
 
         def LoadFromXml(self, daeDocument, xmlNode):
-            self.iPhysicsMaterial = CreateObjectFromXml(daeDocument, xmlNode, DaePhysicsSyntax.INSTANCE_PHYSICS_MATERIAL, DaePhysicsMaterialInstance)		 
-            self.physicsMaterial = CreateObjectFromXml(daeDocument, xmlNode, DaePhysicsSyntax.PHYSICS_MATERIAL, DaePhysicsMaterial) 	   
+            self.iPhysicsMaterial = CreateObjectFromXml(daeDocument, xmlNode, DaePhysicsSyntax.INSTANCE_PHYSICS_MATERIAL, DaePhysicsMaterialInstance)
+            self.physicsMaterial = CreateObjectFromXml(daeDocument, xmlNode, DaePhysicsSyntax.PHYSICS_MATERIAL, DaePhysicsMaterial)
             self.dynamic = CastFromXml(daeDocument, xmlNode, DaePhysicsSyntax.DYNAMIC,bool,True)
             self.mass = CastFromXml(daeDocument, xmlNode, DaePhysicsSyntax.MASS, float, 1)
             self.inertia = ToFloat3(ReadContents(FindElementByTagName(xmlNode,DaePhysicsSyntax.INERTIA)))
@@ -2865,14 +3244,19 @@ class DaeRigidBody(DaeEntity):
 
         def SaveToXml(self, daeDocument):
             node = super(DaeRigidBody.DaeTechniqueCommon,self).SaveToXml(daeDocument)
+            AppendTextChild(node, DaePhysicsSyntax.DYNAMIC, self.dynamic, None)
+            AppendTextChild(node, DaePhysicsSyntax.MASS, self.mass, None)
+            AppendTextChild(node, DaePhysicsSyntax.INERTIA, self.inertia, None)
             AppendChild(daeDocument,node,self.iPhysicsMaterial)
             AppendChild(daeDocument,node,self.physicsMaterial)
             shapes = Element(DaePhysicsSyntax.SHAPE)
             AppendChilds(daeDocument, shapes, self.shapes)
             node.appendChild(shapes)
-            AppendTextChild(node, DaePhysicsSyntax.DYNAMIC, self.dynamic, None)
-            AppendTextChild(node, DaePhysicsSyntax.MASS, self.mass, None)
-            AppendTextChild(node, DaePhysicsSyntax.INERTIA, self.inertia, None)
+
+
+
+
+
             return node
 
         def GetPhysicsMaterial(self):
@@ -2883,6 +3267,202 @@ class DaeRigidBody(DaeEntity):
 
         def __str__(self):
             return super(DaeRigidBody.DaeTechniqueCommon,self).__str__()
+
+
+
+class DaeRigidConstraintInstance(DaeEntity):
+    def __init__(self):
+        super(DaeRigidConstraintInstance, self).__init__()
+        self.syntax = DaePhysicsSyntax.INSTANCE_RIGID_CONSTRAINT
+        self.constraint = None
+        self.target = None
+        self.bodyString = ''
+        self.targetString = ''
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        self.bodyString = ReadAttribute(xmlNode, DaeSyntax.BODY)
+        self.targetString = ReadAttribute(xmlNode, DaeSyntax.TARGET)[1:]
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeRigidConstraintInstance,self).SaveToXml(daeDocument)
+        SetAttribute(node, DaePhysicsSyntax.CONSTRAINT, StripString(self.constraint.sid))
+        return node
+
+
+class DaeLinearLimit(DaeEntity):
+    def __init__(self):
+        super(DaeLinearLimit, self).__init__()
+        self.syntax = DaePhysicsSyntax.LINEAR_LIMITS
+        self.min = [0,0,0]
+        self.max = [0,0,0]
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        #super(DaeBoxShape, self).LoadFromXml(daeDocument, xmlNode)
+        self.halfExtents = []
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeLinearLimit, self).SaveToXml(daeDocument)
+        AppendTextChild(node, 'min', [self.min[0],self.min[1],self.min[2]], None)
+        AppendTextChild(node, 'max', [self.max[0],self.max[1],self.max[2]], None)
+        return node
+    def __str__(self):
+        return super(DaeLinearLimit,self).__str__()
+
+class DaeAngularLimit(DaeEntity):
+    def __init__(self):
+        super(DaeAngularLimit, self).__init__()
+        self.syntax = DaePhysicsSyntax.ANGULAR_LIMITS
+        self.min = [0,0,0]
+        self.max = [0,0,0]
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        #super(DaeBoxShape, self).LoadFromXml(daeDocument, xmlNode)
+        self.halfExtents = []
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeAngularLimit, self).SaveToXml(daeDocument)
+        AppendTextChild(node, 'min', [self.min[0],self.min[1],self.min[2]], None)
+        AppendTextChild(node, 'max', [self.max[0],self.max[1],self.max[2]], None)
+        return node
+    def __str__(self):
+        return super(DaeAngularLimit,self).__str__()
+
+class DaeLimit(DaeEntity):
+    def __init__(self):
+        super(DaeLimit, self).__init__()
+        self.syntax = DaePhysicsSyntax.LIMITS
+        self.linearLimits = DaeLinearLimit()
+        self.angularLimits = DaeAngularLimit()
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        #super(DaeBoxShape, self).LoadFromXml(daeDocument, xmlNode)
+        self.halfExtents = []
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeLimit, self).SaveToXml(daeDocument)
+        AppendChild(daeDocument,node,  self.linearLimits)
+        AppendChild(daeDocument,node,  self.angularLimits)
+
+        return node
+
+    def __str__(self):
+        return super(DaeLimit,self).__str__()
+
+
+class DaeRigidConstraint(DaeEntity):
+    def __init__(self):
+        super(DaeRigidConstraint, self).__init__()
+        self.syntax = DaePhysicsSyntax.RIGID_CONSTRAINT
+        self.name = ''
+        self.sid = ''
+        self.ref_attachment = None
+        self.attachment = None
+
+        self.techniqueCommon = DaeRigidConstraint.DaeTechniqueCommon()
+
+    def LoadFromXml(self, daeDocument, xmlNode):
+        self.name = xmlNode.getAttribute(DaeSyntax.NAME)
+        self.sid = xmlNode.getAttribute(DaeSyntax.SID)
+        self.ref_attachment = xmlNode.getAttribute(DaePhysicsSyntax.REF_ATTACHMENT)
+        self.attachment = xmlNode.getAttribute(DaePhysicsSyntax.ATTACHMENT)
+
+        self.techniqueCommon = CreateObjectFromXml(daeDocument, xmlNode, DaeSyntax.TECHNIQUE_COMMON, DaeRigidConstraint.DaeTechniqueCommon)
+
+    def SaveToXml(self, daeDocument):
+        node = super(DaeRigidConstraint, self).SaveToXml(daeDocument)
+        SetAttribute(node,DaeSyntax.NAME, StripString(self.name))
+        SetAttribute(node,DaeSyntax.SID, StripString(self.sid))
+        if not (self.ref_attachment is None):
+            #SetAttribute(node,DaePhysicsSyntax.REF_ATTACHMENT,StripString(self.ref_attachment.sid))
+            AppendChild(daeDocument,node,self.ref_attachment)
+        if not (self.attachment is None):
+            AppendChild(daeDocument,node,self.attachment)
+
+        AppendChild(daeDocument,node,self.techniqueCommon)
+        return node
+
+    class DaeRefAttachment(DaeEntity):
+        def __init__(self):
+            super(DaeRigidConstraint.DaeRefAttachment, self).__init__()
+            self.syntax = DaePhysicsSyntax.REF_ATTACHMENT
+            self.rigid_body = None
+            self.blenderobject = None
+            self.enabled = True
+            self.extras = []
+            self.pivX = 0.0
+            self.pivY = 0.0
+            self.pivZ = 0.0
+            self.axX = 0.0
+            self.axY = 0.0
+            self.axZ = 0.0
+
+        def LoadFromXml(self, daeDocument, xmlNode):
+            self.enabled = CastFromXml(daeDocument, xmlNode, DaePhysicsSyntax.CONSTRAINT_ENABLED,bool,True)
+        def SaveToXml(self, daeDocument):
+            node = super(DaeRigidConstraint.DaeRefAttachment,self).SaveToXml(daeDocument)
+            SetAttribute(node,DaePhysicsSyntax.RIGID_BODY, StripString(self.rigid_body.sid))
+            AppendTextChild(node, DaeSyntax.TRANSLATE, [self.pivX,self.pivY,self.pivZ], None)
+            AppendTextChild(node, DaeSyntax.ROTATE, [1,0,0,self.axX], None)
+            AppendTextChild(node, DaeSyntax.ROTATE, [0,1,0,self.axY], None)
+            AppendTextChild(node, DaeSyntax.ROTATE, [0,0,1,self.axZ], None)
+
+            return node
+
+        def __str__(self):
+            return super(DaeRigidConstraint.DaeRefAttachment,self).__str__()
+
+    class DaeAttachment(DaeEntity):
+        def __init__(self):
+            super(DaeRigidConstraint.DaeAttachment, self).__init__()
+            self.syntax = DaePhysicsSyntax.ATTACHMENT
+            self.rigid_body = None
+            self.blenderobject = None
+            self.enabled = True
+            self.extras = []
+            self.pivX = 0.0
+            self.pivY = 0.0
+            self.pivZ = 0.0
+            self.axX = 0.0
+            self.axY = 0.0
+            self.axZ = 0.0
+
+        def LoadFromXml(self, daeDocument, xmlNode):
+            self.enabled = CastFromXml(daeDocument, xmlNode, DaePhysicsSyntax.CONSTRAINT_ENABLED,bool,True)
+        def SaveToXml(self, daeDocument):
+            node = super(DaeRigidConstraint.DaeAttachment,self).SaveToXml(daeDocument)
+            SetAttribute(node,DaePhysicsSyntax.RIGID_BODY, StripString(self.rigid_body.sid))
+            AppendTextChild(node, DaeSyntax.TRANSLATE, [self.pivX,self.pivY,self.pivZ], None)
+            AppendTextChild(node, DaeSyntax.ROTATE, [1,0,0,self.axX], None)
+            AppendTextChild(node, DaeSyntax.ROTATE, [0,1,0,self.axY], None)
+            AppendTextChild(node, DaeSyntax.ROTATE, [0,0,1,self.axZ], None)
+
+            #AppendTextChild(node, DaePhysicsSyntax.CONSTRAINT_ENABLED, self.enabled, None)
+            return node
+
+        def __str__(self):
+            return super(DaeRigidConstraint.DaeAttachment,self).__str__()
+
+
+    class DaeTechniqueCommon(DaeEntity):
+        def __init__(self):
+            super(DaeRigidConstraint.DaeTechniqueCommon, self).__init__()
+            self.syntax = DaeSyntax.TECHNIQUE_COMMON
+            self.enabled = True
+            self.limits = DaeLimit()
+
+        def LoadFromXml(self, daeDocument, xmlNode):
+            self.enabled = CastFromXml(daeDocument, xmlNode, DaePhysicsSyntax.CONSTRAINT_ENABLED,bool,True)
+
+        def SaveToXml(self, daeDocument):
+            node = super(DaeRigidConstraint.DaeTechniqueCommon,self).SaveToXml(daeDocument)
+            AppendTextChild(node, DaePhysicsSyntax.CONSTRAINT_ENABLED, self.enabled, None)
+            AppendChild(daeDocument, node, self.limits)
+
+            return node
+        def __str__(self):
+            return super(DaeRigidConstraint.DaeTechniqueCommon,self).__str__()
+
+
 
 class DaeShape(DaeEntity):
     def __init__(self):
@@ -2916,6 +3496,8 @@ class DaeBoxShape(DaeShape):
         node = super(DaeBoxShape, self).SaveToXml(daeDocument)
         AppendTextChild(node, DaePhysicsSyntax.HALF_EXTENTS, self.halfExtents)
         return node
+
+
 
 class DaeSphereShape(DaeShape):
     def __init__(self):
@@ -3029,9 +3611,22 @@ class DaePhysicsSyntax(object):
 
     RIGID_BODY = 'rigid_body'
 
+    RIGID_CONSTRAINT = 'rigid_constraint'
+    REF_ATTACHMENT = 'ref_attachment'
+    ATTACHMENT = 'attachment'
+    INTERPENETRATE = 'interpenetrate'
+    CONSTRAINT_ENABLED = 'enabled'
+    LIMITS = 'limits'
+    LINEAR_LIMITS = 'linear'
+    ANGULAR_LIMITS = 'swing_cone_and_twist'
+    LIMITS_MIN = 'min'
+    LIMITS_MAX = 'max'
+
     INSTANCE_PHYSICS_MODEL = 'instance_physics_model'
     INSTANCE_PHYSICS_MATERIAL = 'instance_physics_material'
     INSTANCE_RIGID_BODY = 'instance_rigid_body'
+    INSTANCE_RIGID_CONSTRAINT = 'instance_rigid_constraint'
+    CONSTRAINT = 'constraint'
 
     RESTITUTION = 'restitution'
     STATIC_FRICTION = 'static_friction'
@@ -3046,7 +3641,6 @@ class DaePhysicsSyntax(object):
     RADIUS1 = 'radius1'
     RADIUS2 = 'radius2'
 
-
     BOX = 'box'
     PLANE = 'plane'
     CYLINDER = 'cylinder'
@@ -3054,6 +3648,8 @@ class DaePhysicsSyntax(object):
     CAPSULE = 'capsule'
     TAPERED_CAPSULE ='tapered_capsule'
     TAPERED_CYLINDER = 'tapered_cylinder'
+
+    EQUATION = 'equation'
 
     HALF_EXTENTS = 'half_extents'
 
@@ -3072,13 +3668,13 @@ def CreateObjectsFromXml(colladaDocument, xmlNode, nodeType, objectType):
 def CreateObjectFromXml(colladaDocument, xmlNode, nodeType, objectType, setSyntax = False):
     if xmlNode is None:
         return None
-    node = FindElementByTagName(xmlNode, nodeType)   
+    node = FindElementByTagName(xmlNode, nodeType)
     object = None
     if setSyntax:
         object = objectType(nodeType)
     else:
         object = objectType()
-    if node != None:
+    if node is not None:
         object.LoadFromXml(colladaDocument, node)
         return object
     return None
@@ -3087,7 +3683,7 @@ def CastFromXml(colladaDocument, xmlNode, nodeType, cast, default=None):
     if xmlNode is None:
         return default
     node = FindElementByTagName(xmlNode, nodeType)
-    if node != None:
+    if node is not None:
         textValue = ReadContents(node)
         if cast == bool:
             if textValue.lower() == 'false':
@@ -3101,7 +3697,7 @@ def CastAttributeFromXml(xmlNode, nodeType, cast, default=None):
     if xmlNode is None:
         return default
     val = ReadAttribute(xmlNode, nodeType)
-    if val != None and val != '':
+    if val is not None and val != '':
         return cast(val)
     return default
 
@@ -3126,7 +3722,7 @@ def AppendChilds(daeDocument, xmlNode, daeEntities):
 def AppendTextChild(xmlNode,syntax, object, default = None):
     if object is None:
         return
-    if default != None and object == default:
+    if default is not None and object == default:
         return
     node = Element(syntax)
     xmlNode.appendChild(node)
@@ -3139,10 +3735,11 @@ def AppendTextInChild(xmlNode, object):
     if type(object) == datetime:
         text.data = object.isoformat()##ToDateTime(object)
     elif type(object) == list:
-        if len(object) == 0: return
-        if object[0] is not None and type(object[0]) == float:
-            object = RoundList(object, ROUND)
-        text.data = ListToString(object)
+        if len(object) == 0:
+            return
+##              if object[0] is not None and type(object[0]) == float:
+##                      object = RoundList(object, ROUND)
+        text.data = ListToString(object,ROUND)
     elif type(object) == float:
         text.data = round(object, ROUND)
     elif type(object) == bool:
@@ -3159,11 +3756,12 @@ def SetAttribute(xmlNode,syntax, object):
 
 def ReadNodeUrl(node):
     attribute = ReadAttribute(node,DaeSyntax.URL)
-    if attribute == None: return None
-    else :		  
+    if attribute is None:
+        return None
+    else:
         attribute = str(attribute)
         if attribute.startswith('#'):
-            return attribute[1:]	  
+            return attribute[1:]
     return None
 
 def WriteNodeUrl(node, url):
@@ -3172,10 +3770,42 @@ def WriteNodeUrl(node, url):
 def IsVersionOk(version, curVersion):
     versionAr = version.split('.')
     curVersionAr = curVersion.split('.')
+    if len(versionAr) != len(curVersionAr):
+        return False
     for i in range(len(curVersionAr)):
-        if versionAr[i] != curVersionAr[i]:
-            return False
+        if i == len(versionAr)-1: # minor version
+            if versionAr[i] > curVersionAr[i]:
+                print "The minor version of the file you are using is newer then the plug-in, so errors may occur."
+            elif versionAr[i] < curVersionAr[i]:
+                return False
+        else:
+            if versionAr[i] != curVersionAr[i]:
+                return False
     return True
 
 def StripString(text):
-    return text.replace(' ','_').replace('.','_')
+    if text is not None:
+        return text.replace(' ','_').replace('.','_')
+    else:
+        return text
+
+def CreateExtra(colladaInstance):
+    if isinstance(colladaInstance, DaeEntity):
+        extra = DaeExtra()
+        technique = DaeTechnique()
+        extra.techniques.append(technique)
+        technique.profile = "Blender"
+        colladaInstance.extras.append(extra)
+        return technique
+    else:
+        print "ERROR: Cannot Add Extra Tag"
+        return DaeTechnique()
+
+def GetExtra(colladaInstance):
+    if isinstance(colladaInstance, DaeEntity):
+        if colladaInstance.extras is not None:
+            for daeExtra in colladaInstance.extras:
+                for daeTechnique in daeExtra.techniques:
+                    if daeTechnique.profile == 'Blender':
+                        return daeTechnique
+    return None

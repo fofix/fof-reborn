@@ -34,7 +34,7 @@ from Resource import Resource
 from Data import Data
 from Server import Server
 from Session import ClientSession
-from Svg import ImgContext, ImgDrawing
+from Img import ImgContext, ImgDrawing
 from Debug import DebugLayer
 from Language import _
 import Network
