@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -22,7 +22,7 @@
 
 import pygame
 import Log
-import Audio
+from fretwork import audio
 
 from Task import Task
 from Player import Controls
@@ -86,12 +86,12 @@ class Input(Task):
         self.joysticks = [pygame.joystick.Joystick(id) for id in range(pygame.joystick.get_count())]
         for j in self.joysticks:
             j.init()
-            self.joystickAxes[j.get_id()] = [0] * j.get_numaxes() 
-            self.joystickHats[j.get_id()] = [(0, 0)] * j.get_numhats() 
+            self.joystickAxes[j.get_id()] = [0] * j.get_numaxes()
+            self.joystickHats[j.get_id()] = [(0, 0)] * j.get_numhats()
         Log.debug("%d joysticks found." % (len(self.joysticks)))
 
         # Enable music events
-        Audio.Music.setEndEvent(MusicFinished)
+        audio.Music.setEndEvent(MusicFinished)
 
         # Custom key names
         self.getSystemKeyName = pygame.key.name
@@ -154,7 +154,7 @@ class Input(Task):
 
     def encodeJoystickHat(self, joystick, hat, pos):
         v = int((pos[1] + 1) * 3 + (pos[0] + 1))
-        return 0x30000 + (joystick << 8) + (hat << 4) + v 
+        return 0x30000 + (joystick << 8) + (hat << 4) + v
 
     def decodeJoystickButton(self, id):
         id -= 0x10000

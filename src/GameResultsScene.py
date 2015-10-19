@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -27,7 +27,7 @@ import Dialogs
 import Song
 import Data
 import Theme
-from Audio import Sound
+from fretwork.audio import Sound
 from Language import _
 
 import pygame
@@ -228,7 +228,7 @@ class GameResultsSceneClient(GameResultsScene, SceneClient):
                     x += w
 
             if self.counter > 2500:
-                text = _("Accuracy: %d%%") % self.accuracy      
+                text = _("Accuracy: %d%%") % self.accuracy
                 w, h = font.getStringSize(text)
                 font.render(text, (.5 - w / 2, .55 + v))
                 text = _("Longest note streak: %d") % self.player.longestStreak

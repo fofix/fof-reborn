@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -22,7 +22,7 @@
 
 import midi
 import Log
-import Audio
+from fretwork import audio
 from ConfigParser import ConfigParser
 import os
 import re
@@ -450,20 +450,20 @@ class Song(object):
 
         # load the tracks
         if songTrackName:
-            self.music       = Audio.Music(songTrackName)
+            self.music       = audio.Music(songTrackName)
 
         self.guitarTrack = None
         self.rhythmTrack = None
 
         try:
             if guitarTrackName:
-                self.guitarTrack = Audio.StreamingSound(self.engine, self.engine.audio.getChannel(1), guitarTrackName)
+                self.guitarTrack = audio.StreamingSound(self.engine.audio.getChannel(1), guitarTrackName)
         except Exception, e:
             Log.warn("Unable to load guitar track: %s" % e)
 
         try:
             if rhythmTrackName:
-                self.rhythmTrack = Audio.StreamingSound(self.engine, self.engine.audio.getChannel(2), rhythmTrackName)
+                self.rhythmTrack = audio.StreamingSound(self.engine.audio.getChannel(2), rhythmTrackName)
         except Exception, e:
             Log.warn("Unable to load rhythm track: %s" % e)
 

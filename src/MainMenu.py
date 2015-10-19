@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -32,7 +32,7 @@ from Lobby import Lobby
 from Language import _
 import Dialogs
 import Config
-import Audio
+from fretwork import audio
 import Settings
 
 class MainMenu(BackgroundLayer):
@@ -46,7 +46,7 @@ class MainMenu(BackgroundLayer):
         self.engine.loadImgDrawing(self, "background", "keyboard.png")
         self.engine.loadImgDrawing(self, "guy",        "pose.png")
         self.engine.loadImgDrawing(self, "logo",       "logo.png")
-        self.song = Audio.Sound(self.engine.resource.fileName("menu.ogg"))
+        self.song = audio.Sound(self.engine.resource.fileName("menu.ogg"))
         self.song.setVolume(self.engine.config.get("audio", "songvol"))
         self.song.play(-1)
 

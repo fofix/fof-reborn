@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -24,7 +24,7 @@ from Font import Font
 from Texture import Texture
 from Img import ImgDrawing
 from Texture import Texture
-from Audio import Sound
+from fretwork.audio import Sound
 from Language import _
 import random
 import Language

@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-
 #####################################################################
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -45,7 +45,7 @@ def run_command(command):
 # ApplePersistenceIgnoreState: Existing state will not be touched. New state will be written to *path*
 if 'Darwin' in platform.platform():
     data = run_command('defaults read org.python.python ApplePersistenceIgnoreState')
-    
+
     if data in ['1', 'ON']:
         run_command('defaults write org.python.python ApplePersistenceIgnoreState 0')
         atexit.register(run_command, 'defaults write org.python.python ApplePersistenceIgnoreState %s' % data)
@@ -66,9 +66,14 @@ codecs.register(lambda encoding: encodings.utf_8.getregentry())
 assert codecs.lookup("iso-8859-1")
 assert codecs.lookup("utf-8")
 
+import Log
+import Resource
+from fretwork import log
+logFile = open(os.path.join(Resource.getWritableResourcePath(), "fretsonfire.log"), 'w')
+log.setLogfile(logFile)
+
 from GameEngine import GameEngine
 from MainMenu import MainMenu
-import Log
 import Config
 import Version
 import getopt
@@ -131,4 +136,3 @@ if __name__ == "__main__":
         else:
             break
     engine.quit()
-

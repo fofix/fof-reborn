@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -27,7 +27,7 @@ import sys
 
 from Engine import Engine, Task
 from Video import Video
-from Audio import Audio
+from fretwork.audio import Audio
 from View import View
 from Input import Input, KeyListener, SystemEventListener
 from Resource import Resource
@@ -186,7 +186,6 @@ class GameEngine(Engine):
         if self.config.get("game", "uploadurl").startswith("http://kempele.fi"):
             self.config.set("game", "uploadurl", "http://fretsonfire.sourceforge.net/play")
 
-        self.addTask(self.audio, synchronized = False)
         self.addTask(self.input, synchronized = False)
         self.addTask(self.view)
         self.addTask(self.resource, synchronized = False)
