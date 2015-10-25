@@ -29,16 +29,12 @@ import Player
 import Dialogs
 import Data
 import Theme
-import View
-from fretwork import audio
 import Stage
 import Settings
 
 import math
-import pygame
-import random
 import os
-from OpenGL.GL import *
+import OpenGL.GL as gl
 
 
 class GuitarScene(Scene):
@@ -398,21 +394,21 @@ class GuitarScene(Scene):
                 alpha = 1.0 - diff * 0.005
                 if alpha > .1:
                     Theme.setSelectedColor(alpha)
-                    glPushMatrix()
-                    glTranslate(.1, y + 0.000005 * diff ** 2, 0)
-                    glRotatef(math.sin(self.lastPickPos) * 25, 0, 0, 1)
+                    gl.glPushMatrix()
+                    gl.glTranslate(.1, y + 0.000005 * diff ** 2, 0)
+                    gl.glRotatef(math.sin(self.lastPickPos) * 25, 0, 0, 1)
                     font.render(_("Missed!"), (0, 0))
-                    glPopMatrix()
+                    gl.glPopMatrix()
 
             # show the streak balls
             if self.player.streak >= 30:
-                glColor3f(.5, .5, 1)
+                gl.glColor3f(.5, .5, 1)
             elif self.player.streak >= 20:
-                glColor3f(1, 1, .5)
+                gl.glColor3f(1, 1, .5)
             elif self.player.streak >= 10:
-                glColor3f(1, .5, .5)
+                gl.glColor3f(1, .5, .5)
             else:
-                glColor3f(.5, 1, .5)
+                gl.glColor3f(.5, 1, .5)
 
             s = min(39, self.player.streak) % 10 + 1
             font.render(Data.BALL2 * s + Data.BALL1 * (10 - s),   (.67, y + h * 1.3), scale = 0.0011)
@@ -440,45 +436,45 @@ class GuitarScene(Scene):
                     f = (1.0 - abs(self.song.period * 1 - diff) / (self.song.period * 1)) ** 2
 
                     # Flash the screen
-                    glBegin(GL_TRIANGLE_STRIP)
-                    glColor4f(c[0], c[1], c[2], (f - .5) * 1)
-                    glVertex2f(0, 0)
-                    glColor4f(c[0], c[1], c[2], (f - .5) * 1)
-                    glVertex2f(1, 0)
-                    glColor4f(c[0], c[1], c[2], (f - .5) * .25)
-                    glVertex2f(0, 1)
-                    glColor4f(c[0], c[1], c[2], (f - .5) * .25)
-                    glVertex2f(1, 1)
-                    glEnd()
+                    gl.glBegin(gl.GL_TRIANGLE_STRIP)
+                    gl.glColor4f(c[0], c[1], c[2], (f - .5) * 1)
+                    gl.glVertex2f(0, 0)
+                    gl.glColor4f(c[0], c[1], c[2], (f - .5) * 1)
+                    gl.glVertex2f(1, 0)
+                    gl.glColor4f(c[0], c[1], c[2], (f - .5) * .25)
+                    gl.glVertex2f(0, 1)
+                    gl.glColor4f(c[0], c[1], c[2], (f - .5) * .25)
+                    gl.glVertex2f(1, 1)
+                    gl.glEnd()
 
                     if texture:
-                        glPushMatrix()
-                        glEnable(GL_TEXTURE_2D)
+                        gl.glPushMatrix()
+                        gl.glEnable(gl.GL_TEXTURE_2D)
                         texture.bind()
                         size = (texture.pixelSize[0] * .002, texture.pixelSize[1] * .002)
 
-                        glTranslatef(.5, .15, 0)
-                        glBlendFunc(GL_SRC_ALPHA, GL_ONE)
+                        gl.glTranslatef(.5, .15, 0)
+                        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE)
 
                         f = .5 + .5 * (diff / self.song.period) ** 3
-                        glColor4f(1, 1, 1, min(1, 2 - f))
-                        glBegin(GL_TRIANGLE_STRIP)
-                        glTexCoord2f(0.0, 0.0)
-                        glVertex2f(-size[0] * f, -size[1] * f)
-                        glTexCoord2f(1.0, 0.0)
-                        glVertex2f( size[0] * f, -size[1] * f)
-                        glTexCoord2f(0.0, 1.0)
-                        glVertex2f(-size[0] * f,  size[1] * f)
-                        glTexCoord2f(1.0, 1.0)
-                        glVertex2f( size[0] * f,  size[1] * f)
-                        glEnd()
+                        gl.glColor4f(1, 1, 1, min(1, 2 - f))
+                        gl.glBegin(gl.GL_TRIANGLE_STRIP)
+                        gl.glTexCoord2f(0.0, 0.0)
+                        gl.glVertex2f(-size[0] * f, -size[1] * f)
+                        gl.glTexCoord2f(1.0, 0.0)
+                        gl.glVertex2f( size[0] * f, -size[1] * f)
+                        gl.glTexCoord2f(0.0, 1.0)
+                        gl.glVertex2f(-size[0] * f,  size[1] * f)
+                        gl.glTexCoord2f(1.0, 1.0)
+                        gl.glVertex2f( size[0] * f,  size[1] * f)
+                        gl.glEnd()
 
-                        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-                        glPopMatrix()
+                        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+                        gl.glPopMatrix()
 
             # show the comments
             if self.song and self.song.info.tutorial:
-                glColor3f(1, 1, 1)
+                gl.glColor3f(1, 1, 1)
                 pos = self.getSongPosition()
                 for time, event in self.song.track.getEvents(pos - self.song.period * 2, pos + self.song.period * 4):
                     if isinstance(event, PictureEvent):

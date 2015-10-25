@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami Kyï¿½stilï¿½                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -21,7 +21,7 @@
 #####################################################################
 
 import pygame
-from OpenGL.GL import *
+import OpenGL.GL as gl
 import math
 
 from View import Layer
@@ -31,7 +31,7 @@ import Theme
 import Dialogs
 import Player
 
-class Choice:
+class Choice(object):
     def __init__(self, text, callback, values = None, valueIndex = 0):
         self.text       = unicode(text)
         self.callback   = callback
@@ -151,11 +151,11 @@ class Menu(Layer, KeyListener):
 
     def renderTriangle(self, up = (0, 1), s = .2):
         left = (-up[1], up[0])
-        glBegin(GL_TRIANGLES)
-        glVertex2f( up[0] * s,  up[1] * s)
-        glVertex2f((-up[0] + left[0]) * s, (-up[1] + left[1]) * s)
-        glVertex2f((-up[0] - left[0]) * s, (-up[1] - left[1]) * s)
-        glEnd()
+        gl.glBegin(gl.GL_TRIANGLES)
+        gl.glVertex2f( up[0] * s,  up[1] * s)
+        gl.glVertex2f((-up[0] + left[0]) * s, (-up[1] + left[1]) * s)
+        gl.glVertex2f((-up[0] - left[0]) * s, (-up[1] - left[1]) * s)
+        gl.glEnd()
 
     def render(self, visibility, topMost):
         if not visibility:
@@ -169,9 +169,9 @@ class Menu(Layer, KeyListener):
             if self.fadeScreen:
                 Dialogs.fadeScreen(v)
 
-            glEnable(GL_BLEND)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            glEnable(GL_COLOR_MATERIAL)
+            gl.glEnable(gl.GL_BLEND)
+            gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+            gl.glEnable(gl.GL_COLOR_MATERIAL)
 
             n = len(self.choices)
             x, y = self.pos
@@ -179,34 +179,34 @@ class Menu(Layer, KeyListener):
 
             for i, choice in enumerate(self.choices[self.viewOffset:self.viewOffset + self.viewSize]):
                 text = choice.getText(i + self.viewOffset == self.currentIndex)
-                glPushMatrix()
-                glRotate(v * 45, 0, 0, 1)
+                gl.glPushMatrix()
+                gl.glRotate(v * 45, 0, 0, 1)
 
                 # Draw arrows if scrolling is needed to see all items
                 if i == 0 and self.viewOffset > 0:
                     Theme.setBaseColor((1 - v) * max(.1, 1 - (1.0 / self.viewOffset) / 3))
-                    glPushMatrix()
-                    glTranslatef(x - v / 4 - w * 2, y + h / 2, 0)
+                    gl.glPushMatrix()
+                    gl.glTranslatef(x - v / 4 - w * 2, y + h / 2, 0)
                     self.renderTriangle(up = (0, -1), s = .015)
-                    glPopMatrix()
+                    gl.glPopMatrix()
                 elif i == self.viewSize - 1 and self.viewOffset + self.viewSize < n:
                     Theme.setBaseColor((1 - v) * max(.1, 1 - (1.0 / (n - self.viewOffset - self.viewSize)) / 3))
-                    glPushMatrix()
-                    glTranslatef(x - v / 4 - w * 2, y + h / 2, 0)
+                    gl.glPushMatrix()
+                    gl.glTranslatef(x - v / 4 - w * 2, y + h / 2, 0)
                     self.renderTriangle(up = (0, 1), s = .015)
-                    glPopMatrix()
+                    gl.glPopMatrix()
 
                 if i + self.viewOffset == self.currentIndex:
                     a = (math.sin(self.time) * .15 + .75) * (1 - v * 2)
                     Theme.setSelectedColor(a)
                     a *= -.005
-                    glTranslatef(a, a, a)
+                    gl.glTranslatef(a, a, a)
                 else:
                     Theme.setBaseColor(1 - v)
 
                 font.render(text, (x - v / 4, y))
                 v *= 2
                 y += h
-                glPopMatrix()
+                gl.glPopMatrix()
         finally:
             self.engine.view.resetProjection()
