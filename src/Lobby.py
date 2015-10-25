@@ -27,14 +27,13 @@ import colorsys
 
 from View import Layer
 from Input import KeyListener
-from Session import MessageHandler
 from Language import _
 import MainMenu
 import Dialogs
 import Player
 import Song
 
-class Lobby(Layer, KeyListener, MessageHandler):
+class Lobby(Layer, KeyListener):
     def __init__(self, engine, singlePlayer = False, songName = None):
         self.engine       = engine
         self.time         = 0.0
