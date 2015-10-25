@@ -20,7 +20,7 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from Scene import SceneServer, SceneClient
+from Scene import Scene
 from Menu import Menu
 import Player
 import Dialogs
@@ -35,14 +35,11 @@ import math
 import random
 from OpenGL.GL import *
 
-class GameResultsScene:
-    pass
 
-class GameResultsSceneServer(GameResultsScene, SceneServer):
-    pass
+class GameResultsScene(Scene):
+    def __init__(self, engine, libraryName, songName):
+        super(GameResultsScene, self).__init__(engine)
 
-class GameResultsSceneClient(GameResultsScene, SceneClient):
-    def createClient(self, libraryName, songName):
         self.libraryName     = libraryName
         self.songName        = songName
         self.stars           = 0
@@ -66,7 +63,7 @@ class GameResultsSceneClient(GameResultsScene, SceneClient):
         Dialogs.showLoadingScreen(self.engine, lambda: self.song, text = _("Chilling..."))
 
     def keyPressed(self, key, unicode):
-        ret = SceneClient.keyPressed(self, key, unicode)
+        ret = super(GameResultsScene, self).keyPressed(key, unicode)
 
         c = self.controls.keyPressed(key)
         if self.song and (c in [Player.KEY1, Player.KEY2, Player.CANCEL, Player.ACTION1, Player.ACTION2] or key == pygame.K_RETURN):
@@ -93,23 +90,23 @@ class GameResultsSceneClient(GameResultsScene, SceneClient):
         return ret
 
     def hidden(self):
-        SceneClient.hidden(self)
+        super(GameResultsScene, self).hidden()
         if self.nextScene:
             self.nextScene()
 
     def quit(self):
         self.engine.view.popLayer(self.menu)
-        self.session.world.finishGame()
+        self.engine.finishGame()
 
     def replay(self):
         self.engine.view.popLayer(self.menu)
-        self.session.world.deleteScene(self)
-        self.nextScene = lambda: self.session.world.createScene("GuitarScene", libraryName = self.libraryName, songName = self.songName)
+        self.engine.world.deleteScene(self)
+        self.nextScene = lambda: self.engine.world.createScene("GuitarScene", libraryName = self.libraryName, songName = self.songName)
 
     def changeSong(self):
         self.engine.view.popLayer(self.menu)
-        self.session.world.deleteScene(self)
-        self.nextScene = lambda: self.session.world.createScene("SongChoosingScene")
+        self.engine.world.deleteScene(self)
+        self.nextScene = lambda: self.engine.world.createScene("SongChoosingScene")
 
     def songLoaded(self, song):
         song.difficulty = self.player.difficulty
@@ -135,8 +132,7 @@ class GameResultsSceneClient(GameResultsScene, SceneClient):
                 self.engine.resource.load(self, "taunt", lambda: Sound(self.engine.resource.fileName(taunt)))
 
     def run(self, ticks):
-        SceneClient.run(self, ticks)
-        self.time    += ticks / 50.0
+        super(GameResultsScene, self).run(ticks)
         self.counter += ticks
 
         if self.counter > 5000 and self.taunt:
@@ -148,7 +144,7 @@ class GameResultsSceneClient(GameResultsScene, SceneClient):
         return min(1.0, float(max(start, self.counter)) / ticks)
 
     def render(self, visibility, topMost):
-        SceneClient.render(self, visibility, topMost)
+        super(GameResultsScene, self).render(visibility, topMost)
 
         bigFont = self.engine.data.bigFont
         font    = self.engine.data.font

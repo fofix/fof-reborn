@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -34,7 +34,7 @@ class DebugLayer(Layer):
         #gc.set_debug(gc.DEBUG_LEAK)
 
     def className(self, instance):
-        return str(instance.__class__).split(".")[1]
+        return instance.__class__.__name__
 
     def render(self, visibility, topMost):
         self.engine.view.setOrthogonalProjection(normalize = True)
@@ -60,10 +60,10 @@ class DebugLayer(Layer):
 
             x, y = (.05, .4)
             font.render("Scenes:", (x, y), scale = scale)
-            if "world" in dir(self.engine.server):
-                for scene in self.engine.server.world.scenes:
-                    font.render(self.className(scene), (x + .1, y), scale = scale)
-                    y += h
+            if "world" in dir(self.engine):
+                scene = self.engine.world.scene
+                font.render(self.className(scene), (x + .1, y), scale = scale)
+                y += h
 
             x, y = (.5, .4)
             font.render("Loaders:", (x, y), scale = scale)
@@ -85,8 +85,6 @@ class DebugLayer(Layer):
             font.render("%d threads" % threading.activeCount(), (x + .1, y), scale = scale)
             y += h
             font.render("%.2f fps" % self.engine.timer.fpsEstimate, (x + .1, y), scale = scale)
-            y += h
-            font.render("%d sessions, server %s" % (len(self.engine.sessions), self.engine.server and "on" or "off"), (x + .1, y), scale = scale)
             #y += h
             #font.render("%d gc objects" % len(gc.get_objects()), (x + .1, y), scale = scale)
             #y += h

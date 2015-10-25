@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -27,7 +27,6 @@ import colorsys
 
 from View import Layer
 from Input import KeyListener
-from GameTask import GameTask
 from Session import MessageHandler
 from Language import _
 import MainMenu
@@ -36,42 +35,30 @@ import Player
 import Song
 
 class Lobby(Layer, KeyListener, MessageHandler):
-    def __init__(self, engine, session, singlePlayer = False, songName = None):
+    def __init__(self, engine, singlePlayer = False, songName = None):
         self.engine       = engine
-        self.session      = session
         self.time         = 0.0
         self.gameStarted  = False
         self.singlePlayer = singlePlayer
         self.songName     = songName
-        self.session.broker.addMessageHandler(self)
 
     def shown(self):
         self.engine.input.addKeyListener(self)
 
-        if self.singlePlayer:
-            self.session.world.createPlayer(_("Player"))
-            if self.songName:
-                self.session.world.startGame(libraryName = Song.DEFAULT_LIBRARY, songName = self.songName)
-            else:
-                self.session.world.startGame()
+        self.engine.world.createPlayer(_("Player"))
+        self.gameStarted = True
+        if self.songName:
+            self.engine.world.startGame(libraryName = Song.DEFAULT_LIBRARY, songName = self.songName)
         else:
-            n = self.session.id or 1
-            name = Dialogs.getText(self.engine, _("Enter your name:"), _("Player #%d") % n)
-            if name:
-                self.session.world.createPlayer(name)
-            else:
-                self.engine.view.popLayer(self)
+            self.engine.world.startGame()
 
     def hidden(self):
         self.engine.input.removeKeyListener(self)
-        self.session.broker.removeMessageHandler(self)
         if not self.gameStarted:
-            self.session.close()
             self.engine.view.pushLayer(MainMenu.MainMenu(self.engine))
 
     def handleGameStarted(self, sender):
         self.gameStarted = True
-        self.engine.addTask(GameTask(self.engine, self.session))
         self.engine.view.popLayer(self)
 
     def keyPressed(self, key, unicode):
@@ -80,7 +67,7 @@ class Lobby(Layer, KeyListener, MessageHandler):
             self.engine.view.popLayer(self)
         elif (c in [Player.KEY1] or key == pygame.K_RETURN) and self.canStartGame():
             self.gameStarted = True
-            self.session.world.startGame()
+            self.engine.world.startGame()
         return True
 
     def keyReleased(self, key):
@@ -90,7 +77,7 @@ class Lobby(Layer, KeyListener, MessageHandler):
         self.time += ticks / 50.0
 
     def canStartGame(self):
-        return len(self.session.world.players) > 1 and self.session.isPrimary() and not self.gameStarted
+        return len(self.engine.world.players) > 1 and not self.gameStarted
 
     def render(self, visibility, topMost):
         if self.singlePlayer:
@@ -106,7 +93,7 @@ class Lobby(Layer, KeyListener, MessageHandler):
             glBlendFunc(GL_SRC_ALPHA, GL_ONE)
             glEnable(GL_COLOR_MATERIAL)
 
-            text = _("Lobby (%d players)") % len(self.session.world.players)
+            text = _("Lobby (%d players)") % len(self.engine.world.players)
             w, h = font.getStringSize(text)
 
             x = .5 - w / 2
@@ -130,7 +117,7 @@ class Lobby(Layer, KeyListener, MessageHandler):
             y = .2 + (1 - v) / 4
             glColor4f(1, 1, 1, v)
 
-            for player in self.session.world.players:
+            for player in self.engine.world.players:
                 font.render(player.name, (x, y))
                 y += .08
 

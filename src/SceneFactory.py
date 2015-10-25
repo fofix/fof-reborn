@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -30,13 +30,9 @@ scenes = ["GameResultsScene", "GuitarScene", "SongChoosingScene"]
 def _import(name):
     globals()[name] = __import__(name)
 
-def create(engine, name, owner, server = None, session = None, **args):
-    assert session or server
+def create(engine, name, **args):
 
     _import(name)
 
     m = globals()[name]
-    if server:
-        return getattr(m, name + "Server")(engine = engine, owner = owner, server = server, **args)
-    else:
-        return getattr(m, name + "Client")(engine = engine, owner = owner, session = session, **args)
+    return getattr(m, name)(engine = engine, **args)

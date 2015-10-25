@@ -32,15 +32,14 @@ from View import View
 from Input import Input, KeyListener, SystemEventListener
 from Resource import Resource
 from Data import Data
-from Server import Server
-from Session import ClientSession
 from Img import ImgContext, ImgDrawing
 from Debug import DebugLayer
+from World import World
 from Language import _
-import Network
 import Log
 import Config
 import Dialogs
+import MainMenu
 import Theme
 import Version
 import Mod
@@ -174,7 +173,6 @@ class GameEngine(Engine):
 
         self.resource  = Resource(Version.dataPath())
         self.server    = None
-        self.sessions  = []
         self.mainloop  = self.loading
 
         # Load game modifications
@@ -261,47 +259,13 @@ class GameEngine(Engine):
         self.view.setGeometry((0, 0, width, height))
         self.img.setGeometry((0, 0, width, height))
 
-    def isServerRunning(self):
-        return bool(self.server)
+    def startWorld(self):
+        self.world = World(self)
 
-    def startServer(self):
-        """Start the game server."""
-        if not self.server:
-            Log.debug("Starting server.")
-            self.server = Server(self)
-            self.addTask(self.server, synchronized = False)
-
-    def connect(self, host):
-        """
-        Connect to a game server.
-
-        @param host:  Name of host to connect to
-        @return:      L{Session} connected to remote server
-        """
-        Log.debug("Connecting to host %s." % host)
-        session = ClientSession(self)
-        session.connect(host)
-        self.addTask(session, synchronized = False)
-        self.sessions.append(session)
-        return session
-
-    def stopServer(self):
-        """Stop the game server."""
-        if self.server:
-            Log.debug("Stopping server.")
-            self.removeTask(self.server)
-            self.server = None
-
-    def disconnect(self, session):
-        """
-        Disconnect a L{Session}
-
-        param session:    L{Session} to disconnect
-        """
-        if session in self.sessions:
-            Log.debug("Disconnecting.")
-            self.removeTask(session)
-            self.sessions.remove(session)
+    def finishGame(self):
+        self.world.finishGame()
+        self.world = None
+        self.view.pushLayer(MainMenu.MainMenu(self))
 
     def loadImgDrawing(self, target, name, fileName, textureSize = None):
         """

@@ -50,11 +50,6 @@ class MainMenu(BackgroundLayer):
         self.song.setVolume(self.engine.config.get("audio", "songvol"))
         self.song.play(-1)
 
-        newMultiplayerMenu = [
-            (_("Host Multiplayer Game"), self.hostMultiplayerGame),
-            (_("Join Multiplayer Game"), self.joinMultiplayerGame),
-        ]
-
         editorMenu = Menu(self.engine, [
             (_("Edit Existing Song"),            self.startEditor),
             (_("Import New Song"),               self.startImporter),
@@ -75,7 +70,6 @@ class MainMenu(BackgroundLayer):
 
     def shown(self):
         self.engine.view.pushLayer(self.menu)
-        self.engine.stopServer()
 
         if self.songName:
             self.newSinglePlayerGame(self.songName)
@@ -119,45 +113,16 @@ class MainMenu(BackgroundLayer):
             self.engine.view.popAllLayers()
 
     def showTutorial(self):
-        if self.engine.isServerRunning():
-            return
-        self.engine.startServer()
-        self.engine.resource.load(self, "session", lambda: self.engine.connect("127.0.0.1"), synch = True)
 
-        if Dialogs.showLoadingScreen(self.engine, lambda: self.session and self.session.isConnected):
-            self.launchLayer(lambda: Lobby(self.engine, self.session, singlePlayer = True, songName = "tutorial"))
+        self.engine.startWorld()
+        self.launchLayer(lambda: Lobby(self.engine, singlePlayer = True, songName = "tutorial"))
     showTutorial = catchErrors(showTutorial)
 
     def newSinglePlayerGame(self, songName = None):
-        if self.engine.isServerRunning():
-            return
-        self.engine.startServer()
-        self.engine.resource.load(self, "session", lambda: self.engine.connect("127.0.0.1"), synch = True)
 
-        if Dialogs.showLoadingScreen(self.engine, lambda: self.session and self.session.isConnected):
-            self.launchLayer(lambda: Lobby(self.engine, self.session, singlePlayer = True, songName = songName))
+        self.engine.startWorld()
+        self.launchLayer(lambda: Lobby(self.engine, singlePlayer = True, songName = songName))
     newSinglePlayerGame = catchErrors(newSinglePlayerGame)
-
-    def hostMultiplayerGame(self):
-        self.engine.startServer()
-        self.engine.resource.load(self, "session", lambda: self.engine.connect("127.0.0.1"))
-
-        if Dialogs.showLoadingScreen(self.engine, lambda: self.session and self.session.isConnected):
-            self.launchLayer(lambda: Lobby(self.engine, self.session))
-    hostMultiplayerGame = catchErrors(hostMultiplayerGame)
-
-    def joinMultiplayerGame(self, address = None):
-        if not address:
-            address = Dialogs.getText(self.engine, _("Enter the server address:"), "127.0.0.1")
-
-        if not address:
-            return
-
-        self.engine.resource.load(self, "session", lambda: self.engine.connect(address))
-
-        if Dialogs.showLoadingScreen(self.engine, lambda: self.session and self.session.isConnected, text = _("Connecting...")):
-            self.launchLayer(lambda: Lobby(self.engine, self.session))
-    joinMultiplayerGame = catchErrors(joinMultiplayerGame)
 
     def startEditor(self):
         self.launchLayer(lambda: Editor(self.engine))

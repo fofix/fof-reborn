@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -20,7 +20,7 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from Scene import SceneServer, SceneClient
+from Scene import Scene
 import Player
 import Dialogs
 import Song
@@ -31,20 +31,16 @@ from Language import _
 Config.define("game", "selected_library",  str, "")
 Config.define("game", "selected_song",     str, "")
 
-class SongChoosingScene:
-    pass
+class SongChoosingScene(Scene):
+    def __init__(self, engine, libraryName = None, songName = None):
+        super(SongChoosingScene, self).__init__(engine)
 
-class SongChoosingSceneServer(SongChoosingScene, SceneServer):
-    pass
-
-class SongChoosingSceneClient(SongChoosingScene, SceneClient):
-    def createClient(self, libraryName = None, songName = None):
         self.wizardStarted = False
         self.libraryName   = libraryName
         self.songName      = songName
 
     def run(self, ticks):
-        SceneClient.run(self, ticks)
+        super(SongChoosingScene, self).run(ticks)
 
         if not self.wizardStarted:
             self.wizardStarted = True
@@ -57,7 +53,7 @@ class SongChoosingSceneClient(SongChoosingScene, SceneClient):
                                          selectedSong    = Config.get("game", "selected_song"))
 
                     if not self.songName:
-                        self.session.world.finishGame()
+                        self.engine.finishGame()
                         return
 
                     Config.set("game", "selected_library", self.libraryName)
@@ -76,5 +72,5 @@ class SongChoosingSceneClient(SongChoosingScene, SceneClient):
             if not self.player.difficulty in info.difficulties:
                 self.player.difficulty = info.difficulties[0]
 
-            self.session.world.deleteScene(self)
-            self.session.world.createScene("GuitarScene", libraryName = self.libraryName, songName = self.songName)
+            self.engine.world.deleteScene(self)
+            self.engine.world.createScene("GuitarScene", libraryName = self.libraryName, songName = self.songName)

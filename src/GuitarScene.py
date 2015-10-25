@@ -20,7 +20,7 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from Scene import SceneServer, SceneClient
+from Scene import Scene
 from Song import Note, TextEvent, PictureEvent, loadSong
 from Menu import Menu
 from Guitar import Guitar, KEYS
@@ -40,14 +40,11 @@ import random
 import os
 from OpenGL.GL import *
 
-class GuitarScene:
-    pass
 
-class GuitarSceneServer(GuitarScene, SceneServer):
-    pass
+class GuitarScene(Scene):
+    def __init__(self, engine, libraryName, songName):
+        super(GuitarScene, self).__init__(engine)
 
-class GuitarSceneClient(GuitarScene, SceneClient):
-    def createClient(self, libraryName, songName):
         self.guitar           = Guitar(self.engine)
         self.visibility       = 0.0
         self.libraryName      = libraryName
@@ -130,15 +127,15 @@ class GuitarSceneClient(GuitarScene, SceneClient):
             self.song  = None
         self.done = True
         self.engine.view.popLayer(self.menu)
-        self.session.world.finishGame()
+        self.engine.finishGame()
 
     def changeSong(self):
         if self.song:
             self.song.stop()
             self.song  = None
         self.engine.view.popLayer(self.menu)
-        self.session.world.deleteScene(self)
-        self.session.world.createScene("SongChoosingScene")
+        self.engine.world.deleteScene(self)
+        self.engine.world.createScene("SongChoosingScene")
 
     def restartSong(self):
         self.engine.data.startSound.play()
@@ -157,7 +154,7 @@ class GuitarSceneClient(GuitarScene, SceneClient):
         self.song.stop()
 
     def run(self, ticks):
-        SceneClient.run(self, ticks)
+        super(GuitarScene, self).run(ticks)
         pos = self.getSongPosition()
 
         # update song
@@ -282,8 +279,8 @@ class GuitarSceneClient(GuitarScene, SceneClient):
             self.song.stop()
             self.song  = None
             self.done  = True
-            self.session.world.deleteScene(self)
-            self.session.world.createScene("GameResultsScene", libraryName = self.libraryName, songName = self.songName)
+            self.engine.world.deleteScene(self)
+            self.engine.world.createScene("GameResultsScene", libraryName = self.libraryName, songName = self.songName)
 
     def keyPressed(self, key, unicode):
         control = self.controls.keyPressed(key)
@@ -350,7 +347,7 @@ class GuitarSceneClient(GuitarScene, SceneClient):
             elif self.lastPickPos is not None and pos - self.lastPickPos > self.song.period / 2:
                 self.endPick()
     def render(self, visibility, topMost):
-        SceneClient.render(self, visibility, topMost)
+        super(GuitarScene, self).render(visibility, topMost)
 
         font    = self.engine.data.font
         bigFont = self.engine.data.bigFont
