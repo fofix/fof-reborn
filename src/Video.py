@@ -1,8 +1,6 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -24,7 +22,7 @@ import pygame
 import os
 from OpenGL.GL import *
 from OpenGL.GL.ARB.multisample import *
-import Log
+from fretwork import log
 
 class Video:
     def __init__(self, caption = "Game"):
@@ -41,7 +39,7 @@ class Video:
         self.flags      = flags
         self.fullscreen = fullscreen
 
-        try:    
+        try:
             pygame.display.quit()
         except:
             pass
@@ -60,15 +58,15 @@ class Video:
         try:
             self.screen = pygame.display.set_mode(resolution, flags)
         except Exception, e:
-            Log.error(str(e))
+            log.error(str(e))
             if multisamples:
-                Log.warn("Video setup failed. Trying without antialiasing.")
+                log.warn("Video setup failed. Trying without antialiasing.")
                 pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLEBUFFERS, 0);
                 pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, 0);
                 multisamples = 0
                 self.screen = pygame.display.set_mode(resolution, flags)
             else:
-                Log.error("Video setup failed. Make sure your graphics card supports 32 bit display modes.")
+                log.error("Video setup failed. Make sure your graphics card supports 32 bit display modes.")
                 raise
 
         pygame.display.set_caption(self.caption)

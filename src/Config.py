@@ -1,8 +1,6 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -21,7 +19,7 @@
 #####################################################################
 
 from ConfigParser import ConfigParser
-import Log
+from fretwork import log
 import Resource
 import os
 
@@ -106,7 +104,7 @@ class Config:
             type    = self.prototype[section][option].type
             default = self.prototype[section][option].default
         except KeyError:
-            Log.warn("Config key %s.%s not defined while reading." % (section, option))
+            log.warn("Config key %s.%s not defined while reading." % (section, option))
             type, default = str, None
 
         value = self.config.has_option(section, option) and self.config.get(section, option) or default
@@ -119,7 +117,7 @@ class Config:
         else:
             value = type(value)
 
-        #Log.debug("%s.%s = %s" % (section, option, value))
+        #log.debug("%s.%s = %s" % (section, option, value))
         return value
 
     def set(self, section, option, value):
@@ -133,7 +131,7 @@ class Config:
         try:
             prototype[section][option]
         except KeyError:
-            Log.warn("Config key %s.%s not defined while writing." % (section, option))
+            log.warn("Config key %s.%s not defined while writing." % (section, option))
 
         if not self.config.has_section(section):
             self.config.add_section(section)

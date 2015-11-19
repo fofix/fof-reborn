@@ -1,8 +1,6 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -20,12 +18,14 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import Config
-import Version
-import Log
 import gettext
 import os
 import glob
+
+from fretwork import log
+
+import Config
+import Version
 
 Config.define("game", "language", str, "")
 
@@ -46,7 +46,7 @@ if language:
             return catalog.gettext(m).decode("utf-8")
         _ = translate
     except Exception, x:
-        Log.warn("Unable to select language '%s': %s" % (language, x))
+        log.warn("Unable to select language '%s': %s" % (language, x))
         language = None
 
 # Define the config key again now that we have some options for it

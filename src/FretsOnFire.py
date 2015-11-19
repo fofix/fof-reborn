@@ -1,5 +1,4 @@
 #!/usr/bin/python
-# -*- coding: iso-8859-1 -*-
 #####################################################################
 # Frets on Fire                                                     #
 # Copyright (C) 2006 Sami Kyöstilä                                  #
@@ -66,7 +65,6 @@ codecs.register(lambda encoding: encodings.utf_8.getregentry())
 assert codecs.lookup("iso-8859-1")
 assert codecs.lookup("utf-8")
 
-import Log
 import Resource
 from fretwork import log
 logFile = open(os.path.join(Resource.getWritableResourcePath(), "fretsonfire.log"), 'w')
@@ -94,7 +92,7 @@ if __name__ == "__main__":
     songName = None
     for opt, arg in opts:
         if opt in ["--verbose", "-v"]:
-            Log.quiet = False
+            log.quiet = False
         elif opt in ["--play", "-p"]:
             songName = arg
 
@@ -111,7 +109,7 @@ if __name__ == "__main__":
             pass
 
         if engine.restartRequested:
-            Log.notice("Restarting.")
+            log.notice("Restarting.")
 
             try:
             # Determine whether were running from an exe or not
@@ -130,7 +128,7 @@ if __name__ == "__main__":
                         bin = "/usr/bin/python"
                     os.execl(bin, bin, "FretsOnFire.py", *sys.argv[1:])
             except:
-                Log.warn("Restart failed.")
+                log.warn("Restart failed.")
                 raise
             break
         else:

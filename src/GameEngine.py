@@ -1,6 +1,4 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
 # Copyright (C) 2006 Sami Kyöstilä                                  #
 #                                                                   #
@@ -25,6 +23,8 @@ import pygame
 import os
 import sys
 
+from fretwork import log
+
 from Engine import Engine, Task
 from Video import Video
 from fretwork.audio import Audio
@@ -36,7 +36,6 @@ from Img import ImgContext, ImgDrawing
 from Debug import DebugLayer
 from World import World
 from Language import _
-import Log
 import Config
 import Dialogs
 import MainMenu
@@ -83,7 +82,7 @@ class FullScreenSwitcher(KeyListener):
             self.altStatus = True
         elif key == pygame.K_RETURN and self.altStatus:
             if not self.engine.toggleFullscreen():
-                Log.error("Unable to toggle fullscreen mode.")
+                log.error("Unable to toggle fullscreen mode.")
             return True
         elif key == pygame.K_d and self.altStatus:
             self.engine.setDebugModeEnabled(not self.engine.isDebugModeEnabled())
@@ -139,7 +138,7 @@ class GameEngine(Engine):
         self.video             = Video(self.title)
         self.audio             = Audio()
 
-        Log.debug("Initializing audio.")
+        log.debug("Initializing audio.")
         frequency    = self.config.get("audio", "frequency")
         bits         = self.config.get("audio", "bits")
         stereo       = self.config.get("audio", "stereo")
@@ -149,7 +148,7 @@ class GameEngine(Engine):
         pygame.init()
         self.audio.open(frequency = frequency, bits = bits, stereo = stereo, bufferSize = bufferSize)
 
-        Log.debug("Initializing video.")
+        log.debug("Initializing video.")
         width, height = [int(s) for s in self.config.get("video", "resolution").split("x")]
         fullscreen    = self.config.get("video", "fullscreen")
         multisamples  = self.config.get("video", "multisamples")
@@ -157,7 +156,7 @@ class GameEngine(Engine):
 
         # Enable the high priority timer if configured
         if self.config.get("engine", "highpriority"):
-            Log.debug("Enabling high priority timer.")
+            log.debug("Enabling high priority timer.")
             self.timer.highPriority = True
 
         viewport = glGetIntegerv(GL_VIEWPORT)
@@ -196,7 +195,7 @@ class GameEngine(Engine):
         self.startupLayer       = None
         self.loadingScreenShown = False
 
-        Log.debug("Ready.")
+        log.debug("Ready.")
 
     def setStartupLayer(self, startupLayer):
         """
@@ -337,7 +336,7 @@ class GameEngine(Engine):
                 sys.exit(1)
 
             self.handlingException = True
-            Log.error("%s: %s" % (e.__class__, e))
+            log.error("%s: %s" % (e.__class__, e))
             import traceback
             traceback.print_exc()
 

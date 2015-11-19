@@ -1,8 +1,6 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -220,7 +218,7 @@ class Credits(Layer, KeyListener):
     def render(self, visibility, topMost):
         v = 1.0 - ((1 - visibility) ** 2)
 
-        # render the background    
+        # render the background
         t = self.time / 100 + 34
         w, h, = self.engine.view.geometry[2:4]
         r = .5

@@ -1,6 +1,4 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
 # Copyright (C) 2006 Sami Kyöstilä                                  #
 #                                                                   #
@@ -25,7 +23,7 @@ from View import Layer
 
 import gc
 import threading
-import Log
+from fretwork import log
 
 class DebugLayer(Layer):
     """A layer for showing some debug information."""
@@ -98,7 +96,7 @@ class DebugLayer(Layer):
         before = len(gc.get_objects())
         coll   = gc.collect()
         after  = len(gc.get_objects())
-        Log.debug("%d GC objects collected, total %d -> %d." % (coll, before, after))
+        log.debug("%d GC objects collected, total %d -> %d." % (coll, before, after))
         fn = "gcdump.txt"
         f = open(fn, "w")
         n = 0
@@ -110,4 +108,4 @@ class DebugLayer(Layer):
             except:
                 pass
         f.close()
-        Log.debug("Wrote a dump of %d GC garbage objects to %s." % (n, fn))
+        log.debug("Wrote a dump of %d GC garbage objects to %s." % (n, fn))

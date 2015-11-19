@@ -1,8 +1,6 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -41,8 +39,8 @@ def getAvailableMods(engine):
     try:
         dirList = os.listdir(modPath)
     except OSError, e:
-        import Log
-        Log.warn("Could not find mods directory")
+        from fretwork import log
+        log.warn("Could not find mods directory")
         return []
     return [m for m in dirList if os.path.isdir(os.path.join(modPath, m)) and not m.startswith(".")]
 

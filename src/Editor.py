@@ -1,8 +1,6 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -26,6 +24,8 @@ from OpenGL.GLU import *
 import math
 import colorsys
 
+from fretwork import log
+
 from View import Layer
 from Input import KeyListener
 from Song import loadSong, createSong, Note, difficulties, DEFAULT_LIBRARY
@@ -37,7 +37,6 @@ import MainMenu
 import Dialogs
 import Player
 import Theme
-import Log
 import shutil, os, struct, wave, tempfile
 from struct import unpack
 
@@ -416,7 +415,7 @@ class ArkFile(object):
         f = open(indexFileName, "rb")
         magic, version1, version2, arkSize, length = unpack("IIIII", f.read(5 * 4))
 
-        Log.debug("Reading HDR file v%d.%d. Main archive is %d bytes." % (version1, version2, arkSize))
+        log.debug("Reading HDR file v%d.%d. Main archive is %d bytes." % (version1, version2, arkSize))
 
         # Read the name array
         fileNameData = f.read(length)
@@ -438,8 +437,8 @@ class ArkFile(object):
             offset, fileIndex, dirIndex, length, null = unpack("IIIII", f.read(5 * 4))
             fullName = "%s/%s" % (names[dirIndex], names[fileIndex])
             self.files[fullName] = offset, length
-            Log.debug("File: %s at offset %d, length %d bytes." % (fullName, offset, length))
-        Log.debug("Archive contains %d files." % len(self.files))
+            log.debug("File: %s at offset %d, length %d bytes." % (fullName, offset, length))
+        log.debug("Archive contains %d files." % len(self.files))
         f.close()
 
     def openFile(self, name, mode = "rb"):
@@ -604,7 +603,7 @@ class GHImporter(Layer):
         assert magic == "VgS!"
         header = header[4 + 4:]
 
-        Log.debug("VGS version %d" % (version))
+        log.debug("VGS version %d" % (version))
 
         streams = []
         for channels in range(16):
@@ -612,7 +611,7 @@ class GHImporter(Layer):
             header = header[4 + 4:]
             if not rate or not blocks:
                 break
-            Log.debug("Stream %d: %d blocks at %d Hz" % (len(streams), blocks, rate))
+            log.debug("Stream %d: %d blocks at %d Hz" % (len(streams), blocks, rate))
             streams.append((rate, blocks))
 
         out = [open(os.path.join(workPath, "chan%d.pcm") % c, "wb") for c in range(channels)]
@@ -770,7 +769,7 @@ class GHImporter(Layer):
 
             self.stageInfoText = _("Ready")
             self.stageProgress = 1.0
-            Log.debug("Songs imported: " + ", ".join(songs))
+            log.debug("Songs imported: " + ", ".join(songs))
             return songs
         except:
             self.done = True

@@ -1,8 +1,6 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -25,7 +23,7 @@ from OpenGL.GL import *
 from numpy import reshape, dot, transpose, identity, zeros, float32
 from math import sin, cos
 
-import Log
+from fretwork import log
 import Config
 from Texture import Texture
 
@@ -41,7 +39,7 @@ class ImgContext:
         try:
             glMatrixMode(GL_MODELVIEW)
         except:
-            Log.warn("Image renderer initialization failed; expect corrupted graphics. " +
+            log.warn("Image renderer initialization failed; expect corrupted graphics. " +
                      "To fix this, upgrade your OpenGL drivers and set your display " +
                      "to 32 bit color precision.")
 
@@ -133,13 +131,13 @@ class ImgDrawing:
             self.texture = Texture(imgPath)
         else:
             e = "Unsupported Image format."
-            Log.error(e)
+            log.error(e)
             raise RuntimeError(e)
 
         # Make sure we have a valid texture
         if not self.texture:
             e = "Unable to load texture for %s." % imgPath
-            Log.error(e)
+            log.error(e)
             raise RuntimeError(e)
 
     def convertToTexture(self, width, height):
@@ -147,7 +145,7 @@ class ImgDrawing:
             return
 
         e = "Img drawing does not have a valid texture image."
-        Log.error(e)
+        log.error(e)
         raise RuntimeError(e)
 
     def _getEffectiveTransform(self):

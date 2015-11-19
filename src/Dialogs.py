@@ -1,8 +1,6 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -29,6 +27,8 @@ import math
 import os
 import fnmatch
 
+from fretwork import log
+
 from View import Layer, BackgroundLayer
 from Input import KeyListener
 from Camera import Camera
@@ -37,7 +37,6 @@ from Menu import Menu
 from Language import _
 from Texture import Texture
 import Theme
-import Log
 import Song
 import Data
 import Player
@@ -953,7 +952,7 @@ class FileChooser(BackgroundLayer, KeyListener):
     def render(self, visibility, topMost):
         v = (1 - visibility) ** 2
 
-        # render the background    
+        # render the background
         t = self.time / 100
         w, h, = self.engine.view.geometry[2:4]
         r = .5
@@ -1019,7 +1018,7 @@ class ItemChooser(BackgroundLayer, KeyListener):
     def render(self, visibility, topMost):
         v = (1 - visibility) ** 2
 
-        # render the background    
+        # render the background
         t = self.time / 100
         w, h, = self.engine.view.geometry[2:4]
         r = .5
@@ -1287,7 +1286,7 @@ def showMessage(engine, text):
     @param engine:  Game engine
     @param text:    Message text
     """
-    Log.notice("%s" % text)
+    log.notice("%s" % text)
     d = MessageScreen(engine, text)
     _runDialog(engine, d)
 
@@ -1302,4 +1301,3 @@ def estimateBpm(engine, song, prompt):
     d = BpmEstimator(engine, song, prompt)
     _runDialog(engine, d)
     return d.bpm
-

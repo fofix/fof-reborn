@@ -1,6 +1,4 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
 # Copyright (C) 2006 Sami Kyöstilä                                  #
 #                                                                   #
@@ -20,18 +18,20 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import midi
-import Log
-from fretwork import audio
 from ConfigParser import ConfigParser
 import os
 import re
 import shutil
-import Config
 import sha
 import binascii
 import cerealizer
 import urllib
+
+from fretwork import audio
+from fretwork import log
+
+import midi
+import Config
 import Version
 import Theme
 from Language import _
@@ -89,7 +89,7 @@ class SongInfo(object):
                     if self.getScoreHash(difficulty, score, stars, name) == hash:
                         self.addHighscore(difficulty, score, stars, name)
                     else:
-                        Log.warn("Weak hack attempt detected. Better luck next time.")
+                        log.warn("Weak hack attempt detected. Better luck next time.")
 
     def _set(self, attr, value):
         if not self.info.has_section("song"):
@@ -189,14 +189,14 @@ class SongInfo(object):
                 "version":  Version.version()
             }
             data = urllib.urlopen(url + "?" + urllib.urlencode(d)).read()
-            Log.debug("Score upload result: %s" % data)
+            log.debug("Score upload result: %s" % data)
             if ";" in data:
                 fields = data.split(";")
             else:
                 fields = [data, "0"]
             return (fields[0] == "True", int(fields[1]))
         except Exception, e:
-            Log.error(e)
+            log.error(e)
             return (False, 0)
 
     def addHighscore(self, difficulty, score, stars, name):
@@ -459,13 +459,13 @@ class Song(object):
             if guitarTrackName:
                 self.guitarTrack = audio.StreamingSound(self.engine.audio.getChannel(1), guitarTrackName)
         except Exception, e:
-            Log.warn("Unable to load guitar track: %s" % e)
+            log.warn("Unable to load guitar track: %s" % e)
 
         try:
             if rhythmTrackName:
                 self.rhythmTrack = audio.StreamingSound(self.engine.audio.getChannel(2), rhythmTrackName)
         except Exception, e:
-            Log.warn("Unable to load rhythm track: %s" % e)
+            log.warn("Unable to load rhythm track: %s" % e)
 
         # load the notes
         if noteFileName:
@@ -749,10 +749,10 @@ class MidiReader(midi.MidiOutStream):
                 track, number = noteMap[note]
                 self.addEvent(track, Note(number, endTime - startTime, special = self.velocity[note] == 127), time = startTime)
             else:
-                #Log.warn("MIDI note 0x%x at %d does not map to any game note." % (note, self.abs_time()))
+                #log.warn("MIDI note 0x%x at %d does not map to any game note." % (note, self.abs_time()))
                 pass
         except KeyError:
-            Log.warn("MIDI note 0x%x on channel %d ending at %d was never started." % (note, channel, self.abs_time()))
+            log.warn("MIDI note 0x%x on channel %d ending at %d was never started." % (note, channel, self.abs_time()))
 
 class MidiInfoReader(midi.MidiOutStream):
     # We exit via this exception so that we don't need to read the whole file in

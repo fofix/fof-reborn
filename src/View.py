@@ -1,8 +1,6 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -24,7 +22,7 @@ from __future__ import division
 from OpenGL.GL import *
 from OpenGL.GLU import *
 
-import Log
+from fretwork import log
 
 from Task import Task
 
@@ -64,7 +62,7 @@ class View(Task):
         self.aspectRatio = float(w) / float(h)
 
     def pushLayer(self, layer):
-        Log.debug("View: Push: %s" % layer.__class__.__name__)
+        log.debug("View: Push: %s" % layer.__class__.__name__)
 
         if not layer in self.layers:
             self.layers.append(layer)
@@ -85,7 +83,7 @@ class View(Task):
                 return layer
 
     def popLayer(self, layer):
-        Log.debug("View: Pop: %s" % layer.__class__.__name__)
+        log.debug("View: Pop: %s" % layer.__class__.__name__)
 
         if layer in self.incoming:
             self.incoming.remove(layer)
@@ -93,7 +91,7 @@ class View(Task):
             self.outgoing.append(layer)
 
     def popAllLayers(self):
-        Log.debug("View: Pop all")
+        log.debug("View: Pop all")
         [self.popLayer(l) for l in list(self.layers)]
 
     def isTransitionInProgress(self):

@@ -1,6 +1,4 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
 # Copyright (C) 2006 Sami Kyöstilä                                  #
 #                                                                   #
@@ -22,8 +20,6 @@
 
 from __future__ import division
 
-import Log
-import Config
 import pygame
 import StringIO
 from OpenGL.GL import *
@@ -31,6 +27,10 @@ from OpenGL.GLU import *
 from Queue import Queue, Empty
 
 from PIL import Image
+
+from fretwork import log
+
+import Config
 
 Config.define("opengl", "supportfbo", bool, False)
 
@@ -133,11 +133,11 @@ class Framebuffer:
         Framebuffer.fboSupported = False
 
         if not Config.get("opengl", "supportfbo"):
-            Log.warn("Frame buffer object support disabled in configuration.")
+            log.warn("Frame buffer object support disabled in configuration.")
             return False
 
         if not _getExtension("GL_EXT_framebuffer_object"):
-            Log.warn("No support for framebuffer objects, so render to texture functionality disabled.")
+            log.warn("No support for framebuffer objects, so render to texture functionality disabled.")
             return False
 
         Framebuffer.fboSupported = True
@@ -365,7 +365,7 @@ class TextureAtlas(object):
             self.rowHeight = 0
 
         if y + h >= self.texture.pixelSize[1]:
-            Log.debug("Texture atlas %s full after %d surfaces." % (self.texture.pixelSize, self.surfaceCount))
+            log.debug("Texture atlas %s full after %d surfaces." % (self.texture.pixelSize, self.surfaceCount))
             raise TextureAtlasFullException()
 
         self.texture.loadSubsurface(surface, position = (x, y), alphaChannel = True)

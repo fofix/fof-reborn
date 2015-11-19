@@ -1,6 +1,4 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
 # Copyright (C) 2006 Sami Kyöstilä                                  #
 #                                                                   #
@@ -21,7 +19,7 @@
 #####################################################################
 
 import pygame
-import Log
+from fretwork import log
 from fretwork import audio
 
 from Task import Task
@@ -88,7 +86,7 @@ class Input(Task):
             j.init()
             self.joystickAxes[j.get_id()] = [0] * j.get_numaxes()
             self.joystickHats[j.get_id()] = [(0, 0)] * j.get_numhats()
-        Log.debug("%d joysticks found." % (len(self.joysticks)))
+        log.debug("%d joysticks found." % (len(self.joysticks)))
 
         # Enable music events
         audio.Music.setEndEvent(MusicFinished)

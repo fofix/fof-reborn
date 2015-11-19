@@ -1,8 +1,6 @@
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -27,8 +25,9 @@ import time
 import shutil
 import stat
 
+from fretwork import log
+
 from Task import Task
-import Log
 import Version
 
 class Loader(Thread):
@@ -75,7 +74,7 @@ class Loader(Thread):
         if self.canceled:
             return
 
-        Log.notice("Loaded %s.%s in %.3f seconds" % (self.target.__class__.__name__, self.name, self.time))
+        log.notice("Loaded %s.%s in %.3f seconds" % (self.target.__class__.__name__, self.name, self.time))
 
         if self.exception:
             raise self.exception[0], self.exception[1], self.exception[2]
@@ -132,7 +131,7 @@ class Resource(Task):
             # read-write path.
             readWritePath = os.path.join(getWritableResourcePath(), *name)
             if not os.path.isfile(readWritePath) and os.path.isfile(readOnlyPath):
-                Log.notice("Copying '%s' to writable data directory." % "/".join(name))
+                log.notice("Copying '%s' to writable data directory." % "/".join(name))
                 try:
                     os.makedirs(os.path.dirname(readWritePath))
                 except:
@@ -141,7 +140,7 @@ class Resource(Task):
                 self.makeWritable(readWritePath)
             # Create directories if needed
             if not os.path.isdir(readWritePath) and os.path.isdir(readOnlyPath):
-                Log.notice("Creating writable directory '%s'." % "/".join(name))
+                log.notice("Creating writable directory '%s'." % "/".join(name))
                 os.makedirs(readWritePath)
                 self.makeWritable(readWritePath)
             return readWritePath
@@ -150,7 +149,7 @@ class Resource(Task):
         os.chmod(path, stat.S_IWRITE | stat.S_IREAD | stat.S_IEXEC)
 
     def load(self, target = None, name = None, function = lambda: None, synch = False, onLoad = None):
-        Log.notice("Loading %s.%s %s" % (target.__class__.__name__, name, synch and "synchronously" or "asynchronously"))
+        log.notice("Loading %s.%s %s" % (target.__class__.__name__, name, synch and "synchronously" or "asynchronously"))
         l = Loader(target, name, function, self.resultQueue, self.loaderSemaphore, onLoad = onLoad)
         if synch:
             l.load()
