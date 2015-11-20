@@ -19,20 +19,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,        #
 # MA  02110-1301, USA.                                              #
 #####################################################################
-
-# Scenes
-import glob
+import importlib
 
 # Static list for now to ease building
-#scenes = [n.replace(".py", "") for n in glob.glob("*Scene.py")]
 scenes = ["GameResultsScene", "GuitarScene", "SongChoosingScene"]
 
-def _import(name):
-    globals()[name] = __import__(name)
-
 def create(engine, name, **args):
-
-    _import(name)
-
-    m = globals()[name]
-    return getattr(m, name)(engine = engine, **args)
+    scene_name = importlib.import_module(name)
+    return getattr(scene_name, name)(engine = engine, **args)
