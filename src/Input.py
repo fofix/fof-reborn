@@ -23,18 +23,18 @@
 import pygame
 from fretwork import log
 from fretwork import audio
+from fretwork.task import Task
 
-from Task import Task
 from Player import Controls
 
-class KeyListener:
+class KeyListener(object):
     def keyPressed(self, key, unicode):
         pass
 
     def keyReleased(self, key):
         pass
 
-class MouseListener:
+class MouseListener(object):
     def mouseButtonPressed(self, button, pos):
         pass
 
@@ -44,7 +44,7 @@ class MouseListener:
     def mouseMoved(self, pos, rel):
         pass
 
-class SystemEventListener:
+class SystemEventListener(object):
     def screenResized(self, size):
         pass
 
@@ -69,7 +69,8 @@ except:
 
 class Input(Task):
     def __init__(self):
-        Task.__init__(self)
+        super(Input, self).__init__()
+        
         self.mouse                = pygame.mouse
         self.mouseListeners       = []
         self.keyListeners         = []

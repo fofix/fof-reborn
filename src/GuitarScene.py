@@ -202,7 +202,7 @@ class GuitarScene(Scene):
             self.player.streak = 0
 
         # late pick
-        if self.keyBurstTimeout is not None and self.engine.timer.time > self.keyBurstTimeout:
+        if self.keyBurstTimeout is not None and self.engine.timer.delta_time() > self.keyBurstTimeout:
             self.keyBurstTimeout = None
             notes = self.guitar.getRequiredNotes(self.song, pos)
             if self.guitar.controlsMatchNotes(self.controls, notes):
@@ -287,7 +287,7 @@ class GuitarScene(Scene):
                     self.keyBurstTimeout = None
                     break
             else:
-                self.keyBurstTimeout = self.engine.timer.time + self.keyBurstPeriod
+                self.keyBurstTimeout = self.engine.timer.delta_time() + self.keyBurstPeriod
                 return True
 
         if control in (Player.ACTION1, Player.ACTION2) and self.song:

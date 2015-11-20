@@ -24,10 +24,12 @@ from OpenGL.GL import *
 import pygame
 import os
 import sys
+import gc
 
 from fretwork import log
+from fretwork.task import TaskEngine
+from fretwork.timer import FpsTimer
 
-from Engine import Engine, Task
 from Video import Video
 from fretwork.audio import Audio
 from View import View
@@ -46,7 +48,6 @@ import Version
 import Mod
 
 # define configuration keys
-Config.define("engine", "highpriority", bool,  True)
 Config.define("game",   "uploadscores", bool,  False, text = _("Upload Highscores"),    options = {False: _("No"), True: _("Yes")})
 Config.define("game",   "uploadurl",    str,   "http://fretsonfire.sourceforge.net/play")
 Config.define("game",   "leftymode",    bool,  False, text = _("Lefty mode"),           options = {False: _("No"), True: _("Yes")})
@@ -113,7 +114,7 @@ class SystemEventHandler(SystemEventListener):
     def quit(self):
         self.engine.quit()
 
-class GameEngine(Engine):
+class GameEngine(object):
     """The main game engine."""
     def __init__(self, config = None):
         """
@@ -127,8 +128,7 @@ class GameEngine(Engine):
 
         self.config  = config
 
-        fps          = self.config.get("video", "fps")
-        Engine.__init__(self, fps = fps)
+        self.fps          = self.config.get("video", "fps")
 
         pygame.init()
 
@@ -154,11 +154,6 @@ class GameEngine(Engine):
         multisamples  = self.config.get("video", "multisamples")
         self.video.setMode((width, height), fullscreen = fullscreen, multisamples = multisamples)
 
-        # Enable the high priority timer if configured
-        if self.config.get("engine", "highpriority"):
-            log.debug("Enabling high priority timer.")
-            self.timer.highPriority = True
-
         viewport = glGetIntegerv(GL_VIEWPORT)
         h = viewport[3] - viewport[1]
         w = viewport[2] - viewport[0]
@@ -183,9 +178,14 @@ class GameEngine(Engine):
         if self.config.get("game", "uploadurl").startswith("http://kempele.fi"):
             self.config.set("game", "uploadurl", "http://fretsonfire.sourceforge.net/play")
 
-        self.addTask(self.input, synchronized = False)
-        self.addTask(self.view)
-        self.addTask(self.resource, synchronized = False)
+        self.running = True
+        self.timer = FpsTimer()
+        self.tickDelta = 0
+        self.task = TaskEngine(self)
+
+        self.task.addTask(self.input, synced = False)
+        self.task.addTask(self.view)
+        self.task.addTask(self.resource, synced = False)
         self.data = Data(self.resource, self.img)
 
         self.input.addKeyListener(FullScreenSwitcher(self), priority = True)
@@ -196,6 +196,23 @@ class GameEngine(Engine):
         self.loadingScreenShown = False
 
         log.debug("Ready.")
+
+    def enableGarbageCollection(self, enabled):
+        """
+        Enable or disable garbage collection whenever a random garbage
+        collection run would be undesirable. Disabling the garbage collector
+        has the unfortunate side-effect that your memory usage will skyrocket.
+        """
+        if enabled:
+            gc.enable()
+        else:
+            gc.disable()
+
+    def collectGarbage(self):
+        """
+        Run a garbage collection run.
+        """
+        gc.collect()
 
     def setStartupLayer(self, startupLayer):
         """
@@ -240,13 +257,12 @@ class GameEngine(Engine):
             self.restartRequested = True
             self.input.broadcastSystemEvent("restartRequested")
         else:
-                # evilynux - With self.audio.close(), calling self.quit() results in
-                #            a crash. Calling the parent directly as a workaround.
-            Engine.quit(self)
+            self.quit()
 
     def quit(self):
         self.audio.close()
-        Engine.quit(self)
+        self.task.exit()
+        self.running = False
 
     def resizeScreen(self, width, height):
         """
@@ -281,8 +297,6 @@ class GameEngine(Engine):
 
     def loading(self):
         """Loading state loop."""
-        done = Engine.run(self)
-        self.clearScreen()
 
         if self.data.essentialResourcesLoaded():
             if not self.loadingScreenShown:
@@ -292,8 +306,6 @@ class GameEngine(Engine):
                     self.view.pushLayer(self.startupLayer)
                 self.mainloop = self.main
             self.view.render()
-        self.video.flip()
-        return done
 
     def clearScreen(self):
         self.img.clear(*Theme.backgroundColor)
@@ -301,23 +313,28 @@ class GameEngine(Engine):
     def main(self):
         """Main state loop."""
 
-        # Tune the scheduler priority so that transitions are as smooth as possible
-        if self.view.isTransitionInProgress():
-            self.boostBackgroundThreads(False)
-        else:
-            self.boostBackgroundThreads(True)
-
-        done = Engine.run(self)
-        self.clearScreen()
         self.view.render()
         if self.debugLayer:
             self.debugLayer.render(1.0, True)
-        self.video.flip()
-        return done
 
     def run(self):
         try:
-            return self.mainloop()
+            self.tickDelta = self.timer.tick()
+            done = self.task.run()
+            self.clearScreen()
+
+            self.mainloop()
+
+            self.video.flip()
+
+            # Calculate FPS every 2 seconds
+            if self.timer.fpsTime >= 2000:
+                self.fpsEstimate = self.timer.get_fps()
+                print ("%.2f fps" % self.fpsEstimate)
+
+            self.timer.delay(self.fps)
+
+            return done
         except KeyboardInterrupt:
             sys.exit(0)
         except SystemExit:

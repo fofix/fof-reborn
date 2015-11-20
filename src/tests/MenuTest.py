@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -42,7 +42,7 @@ class MenuTest(unittest.TestCase):
         self.e.view.pushLayer(m)
 
         while self.e.view.layers and 0:
-            rootMenu[0][0] = "%.1f FPS" % self.e.timer.fpsEstimate
+            rootMenu[0][0] = "%.1f FPS" % self.e.fpsEstimate
             self.e.run()
         # FIXME: keyboard event injection for testing
 
@@ -58,7 +58,7 @@ class MenuTestInteractive(unittest.TestCase):
         self.e.view.pushLayer(m)
 
         while self.e.view.layers:
-            rootMenu[0][0] = "%.1f FPS" % self.e.timer.fpsEstimate
+            rootMenu[0][0] = "%.1f FPS" % self.e.fpsEstimate
             self.e.run()
 
     def setUp(self):

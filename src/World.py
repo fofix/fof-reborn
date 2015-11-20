@@ -46,7 +46,7 @@ class World(object):
 
     def deleteScene(self, scene):
         self.engine.view.popLayer(self.scene)
-        self.engine.removeTask(scene)
+        self.engine.task.removeTask(scene)
         self.scene = None
 
     def startGame(self, **args):
@@ -54,7 +54,7 @@ class World(object):
 
     def createScene(self, name, **args):
         self.scene = SceneFactory.create(engine = self.engine, name = name, **args)
-        self.engine.addTask(self.scene)
+        self.engine.task.addTask(self.scene)
         self.engine.view.pushLayer(self.scene)
 
     def getPlayers(self):

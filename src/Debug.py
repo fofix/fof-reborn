@@ -48,8 +48,8 @@ class DebugLayer(Layer):
             h = font.getHeight() * scale
 
             font.render("Tasks:", (x, y), scale = scale)
-            for task in self.engine.tasks + self.engine.frameTasks:
-                font.render(self.className(task), (x + .1, y), scale = scale)
+            for task in self.engine.task.tasks:
+                font.render(self.className(task['task']), (x + .1, y), scale = scale)
                 y += h
 
             x, y = (.5, .05)
@@ -84,7 +84,7 @@ class DebugLayer(Layer):
             font.render("System:", (x, y), scale = scale)
             font.render("%d threads" % threading.activeCount(), (x + .1, y), scale = scale)
             y += h
-            font.render("%.2f fps" % self.engine.timer.fpsEstimate, (x + .1, y), scale = scale)
+            font.render("%.2f fps" % self.engine.timer.fps, (x + .1, y), scale = scale)
             #y += h
             #font.render("%d gc objects" % len(gc.get_objects()), (x + .1, y), scale = scale)
             #y += h

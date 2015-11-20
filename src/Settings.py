@@ -54,7 +54,7 @@ class ConfigChoice(Menu.Choice):
                 valueIndex = 0
         else:
             raise RuntimeError("No usable options for %s.%s." % (section, option))
-        Menu.Choice.__init__(self, text = o.text, callback = self.change, values = values, valueIndex = valueIndex)
+        super(ConfigChoice, self).__init__(text = o.text, callback = self.change, values = values, valueIndex = valueIndex)
 
     def change(self, value):
         o = self.config.prototype[self.section][self.option]
@@ -77,7 +77,7 @@ class ConfigChoice(Menu.Choice):
 
 class VolumeConfigChoice(ConfigChoice):
     def __init__(self, engine, config, section, option, autoApply = False):
-        ConfigChoice.__init__(self, config, section, option, autoApply)
+        super(VolumeConfigChoice, self).__init__(config, section, option, autoApply)
         self.engine = engine
 
     def change(self, value):
@@ -94,7 +94,7 @@ class KeyConfigChoice(Menu.Choice):
         self.option  = option
         self.changed = False
         self.value   = None
-        Menu.Choice.__init__(self, text = "", callback = self.change)
+        super(KeyConfigChoice, self).__init__(text = "", callback = self.change)
 
     def getText(self, selected):
         def keycode(k):
@@ -206,7 +206,7 @@ class SettingsMenu(Menu.Menu):
                                gameSettings + \
                                modSettings
 
-        Menu.Menu.__init__(self, engine, settings)
+        super(SettingsMenu, self).__init__(engine, settings)
 
     def applySettings(self):
         for option in self.settingsToApply:
@@ -223,4 +223,4 @@ class GameSettingsMenu(Menu.Menu):
             VolumeConfigChoice(engine, engine.config, "audio",  "rhythmvol", autoApply = True),
             VolumeConfigChoice(engine, engine.config, "audio",  "screwupvol", autoApply = True),
         ]
-        Menu.Menu.__init__(self, engine, settings)
+        super(GameSettingsMenu, self).__init__(engine, settings)

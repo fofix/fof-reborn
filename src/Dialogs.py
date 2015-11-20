@@ -233,7 +233,6 @@ class LoadingScreen(Layer, KeyListener):
         return True
 
     def hidden(self):
-        self.engine.boostBackgroundThreads(False)
         self.engine.input.removeKeyListener(self)
 
     def run(self, ticks):
@@ -248,11 +247,6 @@ class LoadingScreen(Layer, KeyListener):
 
         if not font:
             return
-
-        if visibility > 0.9:
-            self.engine.boostBackgroundThreads(True)
-        else:
-            self.engine.boostBackgroundThreads(False)
 
         try:
             v = (1 - visibility) ** 2

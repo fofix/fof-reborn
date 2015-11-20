@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
+
 #####################################################################
-# -*- coding: iso-8859-1 -*-                                        #
-#                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami KyÃ¶stilÃ¤                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -32,7 +32,7 @@ def loader():
 class ResourceTest(unittest.TestCase):
     def testAsynchLoad(self):
         self.r = Resource()
-        self.e.addTask(self.r, synchronized = False)
+        self.e.task.addTask(self.r, synced = False)
 
         self.r.load(self, "result", lambda: loader())
 
@@ -43,14 +43,14 @@ class ResourceTest(unittest.TestCase):
 
     def testSynchLoad(self):
         self.r = Resource()
-        self.e.addTask(self.r, synchronized = False)
+        self.e.task.addTask(self.r, synced = False)
 
         assert self.r.load(self, "result2", loader, synch = True) == 0xdada
         assert self.result2 == 0xdada
 
     def testAsynchLoadSeries(self):
         self.r = Resource()
-        self.e.addTask(self.r, synchronized = False)
+        self.e.task.addTask(self.r, synced = False)
 
         for i in range(10):
             self.r.load(self, "result%d" % i, loader)
@@ -62,7 +62,7 @@ class ResourceTest(unittest.TestCase):
 
     def testCallback(self):
         self.r = Resource()
-        self.e.addTask(self.r, synchronized = False)
+        self.e.task.addTask(self.r, synced = False)
 
         self.quux = None
         def loaded(r):

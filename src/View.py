@@ -25,8 +25,7 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 
 from fretwork import log
-
-from Task import Task
+from fretwork.task import Task
 
 class Layer(Task):
     def render(self, visibility, topMost):
@@ -50,7 +49,8 @@ class BackgroundLayer(Layer):
 
 class View(Task):
     def __init__(self, engine, geometry = None):
-        Task.__init__(self)
+        super(View, self).__init__()
+
         self.layers = []
         self.incoming = []
         self.outgoing = []
@@ -75,7 +75,7 @@ class View(Task):
             layer.hidden()
             layer.shown()
             self.outgoing.remove(layer)
-        self.engine.addTask(layer)
+        self.engine.task.addTask(layer)
 
     def topLayer(self):
         layers = list(self.layers)
@@ -117,7 +117,7 @@ class View(Task):
                         self.outgoing.remove(layer)
                         self.layers.remove(layer)
                         del self.visibility[layer]
-                        self.engine.removeTask(layer)
+                        self.engine.task.removeTask(layer)
                         layer.hidden()
                     if layer in self.incoming:
                         self.incoming.remove(layer)

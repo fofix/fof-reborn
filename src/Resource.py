@@ -28,8 +28,8 @@ import shutil
 import stat
 
 from fretwork import log
+from fretwork.task import Task
 
-from Task import Task
 import Version
 
 class Loader(Thread):

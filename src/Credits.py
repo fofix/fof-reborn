@@ -96,7 +96,6 @@ class Credits(Layer, KeyListener):
         self.engine.loadImgDrawing(self, "background1", "editor.png")
         self.engine.loadImgDrawing(self, "background2", "keyboard.png")
         self.engine.loadImgDrawing(self, "background3", "cassette.png")
-        self.engine.boostBackgroundThreads(True)
 
         nf = self.engine.data.font
         bf = self.engine.data.bigFont
@@ -188,7 +187,6 @@ class Credits(Layer, KeyListener):
         ]
 
     def songLoaded(self, song):
-        self.engine.boostBackgroundThreads(False)
         song.play()
 
     def shown(self):
