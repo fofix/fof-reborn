@@ -24,10 +24,9 @@ import pygame
 import time
 
 class Timer(object):
-    def __init__(self, fps = 60, tickrate = 1.0):
+    def __init__(self, fps = 60):
         self.fps                   = fps
         self.timestep              = 1000.0 / fps
-        self.tickrate              = tickrate
         self.ticks                 = self.getTime()
         self.frame                 = 0
         self.fpsEstimate           = 0
@@ -36,7 +35,7 @@ class Timer(object):
         self.highPriority          = False
 
     def getTime(self):
-        return int(pygame.time.get_ticks() * self.tickrate)
+        return int(pygame.time.get_ticks())
 
     time = property(getTime)
 

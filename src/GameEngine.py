@@ -46,7 +46,6 @@ import Version
 import Mod
 
 # define configuration keys
-Config.define("engine", "tickrate",     float, 1.0)
 Config.define("engine", "highpriority", bool,  True)
 Config.define("game",   "uploadscores", bool,  False, text = _("Upload Highscores"),    options = {False: _("No"), True: _("Yes")})
 Config.define("game",   "uploadurl",    str,   "http://fretsonfire.sourceforge.net/play")
@@ -129,8 +128,7 @@ class GameEngine(Engine):
         self.config  = config
 
         fps          = self.config.get("video", "fps")
-        tickrate     = self.config.get("engine", "tickrate")
-        Engine.__init__(self, fps = fps, tickrate = tickrate)
+        Engine.__init__(self, fps = fps)
 
         pygame.init()
 

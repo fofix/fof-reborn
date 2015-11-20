@@ -27,10 +27,10 @@ from Task import Task
 
 class Engine:
     """Main task scheduler."""
-    def __init__(self, fps = 60, tickrate = 1.0):
+    def __init__(self, fps = 60):
         self.tasks = []
         self.frameTasks = []
-        self.timer = Timer(fps = fps, tickrate = tickrate)
+        self.timer = Timer(fps = fps)
         self.currentTask = None
         self.paused = []
         self.running = True
