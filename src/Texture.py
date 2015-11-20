@@ -23,7 +23,6 @@
 from __future__ import division
 
 import pygame
-import StringIO
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from Queue import Queue, Empty
