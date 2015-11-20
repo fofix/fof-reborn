@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 #####################################################################
 # Frets on Fire                                                     #
 # Copyright (C) 2006 Sami Kyöstilä                                  #
