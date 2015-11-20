@@ -31,8 +31,8 @@ import urllib
 
 from fretwork import audio
 from fretwork import log
+from fretwork import midi
 
-import midi
 import Config
 import Version
 import Theme
