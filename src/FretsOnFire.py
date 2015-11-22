@@ -72,6 +72,29 @@ from fretwork import log
 logFile = open(os.path.join(Resource.getWritableResourcePath(), "fretsonfire.log"), 'w')
 log.setLogfile(logFile)
 
+import fretwork
+fretworkRequired = (0, 2, 0)
+reqVerStr = '.'.join([str(i) for i in fretworkRequired])
+fretworkErrorStr = '''
+
+The version of fretwork installed is old. Please install the latest version from github.
+https://github.com/fofix/fretwork/releases/
+Installed: {0}
+Required: {1}
+'''
+if getattr(fretwork, '__version__'): # The first version of fretwork didnt have __version__
+    version, verType = fretwork.__version__.split('-') # remove 'dev' from ver
+    version = tuple([int(i) for i in version.split('.')])
+
+    if version < fretworkRequired:
+        fwErrStr = fretworkErrorStr.format(fretwork.__version__, reqVerStr)
+        raise RuntimeError(fwErrStr)
+
+else:
+    version = '0.1.0'
+    fwErrStr = fretworkErrorStr.format(version, reqVerStr)
+    raise RuntimeError(fwErrStr)
+
 from GameEngine import GameEngine
 from MainMenu import MainMenu
 import Config
