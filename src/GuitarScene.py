@@ -77,7 +77,7 @@ class GuitarScene(Scene):
         settingsMenu.fadeScreen = True
 
         self.menu = Menu(self.engine, [
-            (_("Return to Song"),    lambda: None),
+            (_("Return to Song"),    self.resumeHideMenu),
             (_("Restart Song"),      self.restartSong),
             (_("Change Song"),       self.changeSong),
             (_("Settings"),          settingsMenu),
@@ -85,6 +85,14 @@ class GuitarScene(Scene):
         ], fadeScreen = True, onClose = self.resumeGame)
 
         self.restartSong()
+
+    def pauseShowMenu(self):
+        self.pauseGame()
+        self.engine.view.pushLayer(self.menu)
+
+    def resumeHideMenu(self):
+        self.engine.view.popLayer(self.menu)
+        self.resumeGame()
 
     def pauseGame(self):
         if self.song:
@@ -302,8 +310,7 @@ class GuitarScene(Scene):
                self.guitar.controlsMatchNotes(self.controls, notes):
                 self.doPick()
         elif control == Player.CANCEL:
-            self.pauseGame()
-            self.engine.view.pushLayer(self.menu)
+            self.pauseShowMenu()
             return True
         elif key >= ord('a') and key <= ord('z'):
             # cheat codes
